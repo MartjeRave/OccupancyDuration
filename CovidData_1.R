@@ -214,7 +214,7 @@ Neg2_der_w<-function(w_derivative=start_w,
                      data_derivative=Off_data_temp){
   
   Sum_der<-as.vector(t(w_derivative%*%t(data_derivative[,grepl("Incoming_",
-                          names(data_derivative))])))
+                                                               names(data_derivative))])))
   
   
   der_mat<-matrix(nrow=length(w_derivative)-1, ncol=length(w_derivative)-1)
@@ -275,7 +275,7 @@ optimize_Like<-function(w_opt_prev=w_try4_new,
 
 
 optimize_Like_wcheck<-function(w_opt_prev=w_start_adj, 
-                        data_like_opp=datalist[[l]]){
+                               data_like_opp=datalist[[l]]){
   
   Off_data_temp<-Off_cal(w_hat=w_opt_prev, 
                          data_off=data_like_opp[, c("districtId", "date", "Incoming",
@@ -301,21 +301,21 @@ optimize_Like_wcheck<-function(w_opt_prev=w_start_adj,
   
   Sum_i<-t(w_opt_prev%*%t(Off_data_temp[, (grepl("Incoming_", names(Off_data_temp)))]))
   Delta_11<-((Off_data_temp[,(grepl("_1_", names(Off_data_temp))&
-                               (grepl("Incom", names(Off_data_temp))))]-
-               Off_data_temp[,(grepl(paste0("_", length(w_opt_prev),"_"), names(Off_data_temp))&
-                                 (grepl("Incom", names(Off_data_temp))))])/ifelse(Sum_i==0, 
-                                                                                  Sum_i+0.000001, 
-                                                                                  Sum_i))
+                                (grepl("Incom", names(Off_data_temp))))]-
+                Off_data_temp[,(grepl(paste0("_", length(w_opt_prev),"_"), names(Off_data_temp))&
+                                  (grepl("Incom", names(Off_data_temp))))])/ifelse(Sum_i==0, 
+                                                                                   Sum_i+0.000001, 
+                                                                                   Sum_i))
   for(i in 2:(length(w_opt_prev)-1)){
     Delta_11<-cbind(Delta_11, (Off_data_temp[,(grepl(paste0("_", i,"_"), names(Off_data_temp))&
-                      (grepl("Incom", names(Off_data_temp))))]-
-    Off_data_temp[,(grepl(paste0("_", length(w_opt_prev),"_"), names(Off_data_temp))&
-                      (grepl("Incom", names(Off_data_temp))))])/ifelse(Sum_i==0, 
-                                                                       Sum_i+0.000001, 
-                                                                       Sum_i))    
+                                                 (grepl("Incom", names(Off_data_temp))))]-
+                                 Off_data_temp[,(grepl(paste0("_", length(w_opt_prev),"_"), names(Off_data_temp))&
+                                                   (grepl("Incom", names(Off_data_temp))))])/ifelse(Sum_i==0, 
+                                                                                                    Sum_i+0.000001, 
+                                                                                                    Sum_i))    
   }
   colnames(Delta_11)<-paste0("lag_", 1:(length(w_start)-1))
-
+  
   
   return(list("w_sol"=Opt$solution, "Infor"=Dmat, "w_sol_uncon"=Opt$unconstrained.solution,
               "Delta_11"=Delta_11))
@@ -448,7 +448,7 @@ rdiffpois_array_paper =function(data_rdiff=preptrain_try,
                     byrow=TRUE)
     
     Out_poss<-IN_poss- matrix(rep(as.matrix(Diff_sim[, 
-                              names(Diff_sim)==as.character(as.Date(datum))]), length(0:max.k)),
+                                                     names(Diff_sim)==as.character(as.Date(datum))]), length(0:max.k)),
                               byrow=FALSE, ncol=length(0:max.k))
     
     lambda_out_array[, names(lambda_out_array)==as.character(as.Date(datum))]<-
@@ -456,9 +456,9 @@ rdiffpois_array_paper =function(data_rdiff=preptrain_try,
     lambda_out_array[lambda_out_array[, names(lambda_out_array)==as.character(as.Date(datum))]==0,
                      names(lambda_out_array)==as.character(as.Date(datum))]<-0.000001
     Prob<-apply(IN_poss, 2, dpois, lambda=lambda_in_array[, 
-                 names(lambda_in_array)==as.character(as.Date(datum))])*
+                                                          names(lambda_in_array)==as.character(as.Date(datum))])*
       apply(Out_poss, 2, dpois, lambda=lambda_out_array[, 
-            names(lambda_out_array)==as.character(as.Date(datum))])
+                                                        names(lambda_out_array)==as.character(as.Date(datum))])
     
     Prob<-Prob/ifelse(rowSums(Prob, na.rm=TRUE)==0, 1, rowSums(Prob, na.rm=TRUE))
     In_sim[, names(In_sim)==as.character(as.Date(datum))]<- apply(Prob, 1, sample, x=0:max.k, size=1, replace=TRUE)
@@ -583,8 +583,8 @@ sim_data_jk<-function(w=median,
 ######################################################
 ############## Date ##################################
 ######################################################
-
-train_data_l<-readRDS("training_data.rds")%>%
+load("C:/Users/ra98jiq/Documents/GitHub/OccupancyDuration/training_data.rds")
+train_data_l<-train_data_total%>%
   mutate(date=as.Date(date))%>%
   filter(date<=as.Date("2021-12-31")&date>=as.Date("2021-08-01"))%>%
   mutate(Incoming=rpois(n=length(exp(0.3*G_5_7)), lambda=exp(0.3*G_5_7)), 
@@ -605,107 +605,131 @@ I_Mstep<-mgcv::gam(formula_in, data=train_data_l,
 runs1=500
 max_lag=30
 ### start value
-w_start<-exp(-0.1*1:max_lag)/sum(exp(-0.1*1:max_lag))
+w_start<-exp(-0.2*1:max_lag)/sum(exp(-0.2*1:max_lag))
 ### Save Results
-omegas_org<-rbind(omegas_org, 
+omegas_org<-rbind(#omegas_org, 
                   matrix(0, ncol=max_lag, nrow=runs1-400+1))
-omegas_jk<-rbind(omegas_jk, matrix(0, ncol=max_lag, nrow=runs1-400+1))
-omegas_adj<-rbind(omegas_adj, matrix(0, ncol=max_lag, nrow=runs1-400+1))
+omegas_jk<-rbind(#omegas_jk, 
+                 matrix(0, ncol=max_lag, nrow=runs1-400+1))
+omegas_adj<-rbind(#omegas_adj, 
+                  matrix(0, ncol=max_lag, nrow=runs1-400+1))
 modellist<-list()
 IncomOutgo<-list()
 VCOV<-array(0, dim=c(runs1, length(w_start)-1, length(w_start)-1))
-VCOV<-abind(VCOV,array(0, dim=c(runs1-400+1, length(w_start)-1, length(w_start)-1)), along=1)
+#VCOV<-abind(VCOV,array(0, dim=c(runs1-400+1, length(w_start)-1, length(w_start)-1)), along=1)
 logLike<-c()
 c_hats<-c()
 opti_list<-list()
 re_model<-list()
-z<-401
-for(z in 401:runs1){
+z<-1
+
+for(z in z:runs1){
   
   #### Step 1 #### Outer E-Step
   Outer1<-rdiffpois_array_paper(data_rdiff=(train_data_l%>%
-                                  dplyr::select(-c("Incoming", "Outgoing"))),
-                        IMSTEP=I_Mstep,
-                        w_sim=w_start,
-                        max.k=1000)
-  
-  if(z/runs1<0.9){max_w_start=100}else{max_w_start=3}
-  #### Step 2 #### Outgoing M-Step 
-  for(i in 1:max_w_start){
-    w_start_i<-optimize_Like(w_opt_prev=w_start, 
-                data_like_opp=Outer1$data_all)
-    if(sum((c(w_start_i$w_sol, 1-sum(w_start_i$w_sol))-w_start)^2)<0.00001){
-      break
-      }else{
-      w_start<-c(w_start_i$w_sol, 1-sum(w_start_i$w_sol))
-      VCOV[z,,]<-w_start_i$Infor
-      }
-  }
-  print(paste("        OMEGA OG: Done with", i, "out of 100 runs"))
-  if(any(w_start<0)){
-    w_start<-round(w_start, 15)/sum(round(w_start, 15))
-    w_start[w_start<0]<-0
-    w_start<-w_start/sum(w_start)
-    if(w_start[1]==0){
-      w_start<-exp(-0.1*1:max_lag)/sum(exp(-0.1*1:max_lag))
-      print("WARNING OMEGA HAD TO BE IMPUTED")
-    }
-    }
-  
-  VCOV[z,,]<-w_start_i$Infor
-  
-  if(z/runs1>0.7){
-
-  #### Step 3 #### Outgoing bias correction
-  InnerSim<-sim_data_jk(w=w_start,
-              ss=123,
-              deterministic=TRUE,
-              coef=coef(I_Mstep),
-              Xmat_in_data=Outer1$data%>%
-                dplyr::select(-c("Incoming", "Outgoing")),
-              model_in=I_Mstep)
-  #### Step 4 #### Outgoing bias correction
-  Inner4<-rdiffpois_array_paper(data_rdiff=(InnerSim%>%
-                                dplyr::select(-c("Incoming", "Outgoing"))),
+                                              dplyr::select(-c("Incoming", "Outgoing"))),
                                 IMSTEP=I_Mstep,
                                 w_sim=w_start,
                                 max.k=1000)
-  #### Step 5 #### Outgoing exit rate JK
-  w_start_jk<-w_start
+  
+  max_w_start= 100 
+  #### Step 2 #### Outgoing M-Step 
   for(i in 1:max_w_start){
-    w_start_i<-optimize_Like(w_opt_prev=w_start_jk, 
-                             data_like_opp=Inner4$data_all)
-    if(sum((c(w_start_i$w_sol, 1-sum(w_start_i$w_sol))-w_start_jk)^2)<0.00001){
-      w_start_jk<-c(w_start_i$w_sol, 1-sum(w_start_i$w_sol))
+    w_start_i<-optimize_Like(w_opt_prev=w_start, 
+                             data_like_opp=Outer1$data_all)
+    
+    w_start_1<-c(round(w_start_i$w_sol, 15)/sum(round(w_start_i$w_sol, 15)),0)
+    
+    if(any(w_start_1<0)){ #### This is TRUE likely due to rounding errors or bad places that the optimizer lands in
+      w_start_1[w_start_1<0]<-0
+      w_start_1<-w_start_1/sum(w_start_1)
+    }
+    if(w_start_1[1]==0){ #### Fail Safe
+      w_start_1<-exp(-0.2*1:max_lag)/sum(exp(-0.2*1:max_lag))
+      print("WARNING OMEGA HAD TO BE IMPUTED")
+      w_start<-w_start_1
+      VCOV[z,,]<-w_start_i$Infor
+      break ## We break otherwise optimization is going to be cyclical
+    }
+    
+    if(sum((w_start_1-w_start)^2)<0.00001){
       break
     }else{
-      w_start_jk<-c(w_start_i$w_sol, 1-sum(w_start_i$w_sol))
+      w_start<-w_start_1
+      VCOV[z,,]<-w_start_i$Infor
     }
   }
-  print(paste("        OMEGA JK: Done with", i, "outof 100 runs"))
+  print(paste("        OMEGA JK: Done with", i, "outof ", max_w_start,"runs"))
   
-  #### Step 6 #### Bias correction
-  c_hat<-coef(lm(I((w_start-1/max_lag)^2)~I((w_start_jk-1/max_lag)^2)-1))
-  w_start_adj<-1/max_lag+ifelse(w_start<1/max_lag, -1, 1)*sqrt(c_hat*(w_start-1/max_lag)^2)
-  w_start_adj[w_start_adj<0]<-0
-  w_start_adj<-w_start_adj/sum(w_start_adj)
+  if(z>100){
     
+    #### Step 3 #### Outgoing bias correction
+    InnerSim<-sim_data_jk(w=w_start,
+                          ss=123,
+                          deterministic=TRUE,
+                          coef=coef(I_Mstep),
+                          Xmat_in_data=Outer1$data%>%
+                            dplyr::select(-c("Incoming", "Outgoing")),
+                          model_in=I_Mstep)
+    
+    #### Step 4 #### Outgoing bias correction
+    Inner4<-rdiffpois_array_paper(data_rdiff=(InnerSim%>%
+                                                dplyr::select(-c("Incoming", "Outgoing"))),
+                                  IMSTEP=I_Mstep,
+                                  w_sim=w_start,
+                                  max.k=1000)
+    #### Step 5 #### Outgoing exit rate JK
+    w_start_jk<-w_start
+    for(i in 1:max_w_start){
+      w_start_i<-optimize_Like(w_opt_prev=w_start_jk, 
+                               data_like_opp=Inner4$data_all)
+      
+      w_start_jk_1<-c(round(w_start_i$w_sol, 15)/sum(round(w_start_i$w_sol, 15)),0)
+      
+      if(any(w_start_jk_1<0)){ #### This is TRUE likely due to rounding errors or bad places that the optimizer lands in
+        w_start_jk_1[w_start_jk_1<0]<-0
+        w_start_jk_1<-w_start_jk_1/sum(w_start_jk_1)
+        if(w_start_jk_1[1]==0){ #### Fail Safe
+          w_start_jk_1<-exp(-0.2*1:max_lag)/sum(exp(-0.2*1:max_lag))
+          print("WARNING OMEGA HAD TO BE IMPUTED")
+        }
+      }
+      
+      if(sum((w_start_jk_1-w_start_jk)^2)<0.00001){
+        w_start_jk<-w_start_jk_1
+        break
+      }else{
+        w_start_jk<-w_start_jk_1
+      }
+    }
+    print(paste("        OMEGA JK: Done with", i, "outof ", max_w_start,"runs"))
+    
+    #### Step 6 #### Bias correction
+    c_hat<-coef(lm(I((w_start-1/max_lag)^2)~I((w_start_jk-1/max_lag)^2)-1))
+    w_start_adj<-1/max_lag+ifelse(w_start<1/max_lag, -1, 1)*sqrt(c_hat*(w_start-1/max_lag)^2)
+    w_start_adj[w_start_adj<0]<-0
+    w_start_adj<-w_start_adj/sum(w_start_adj)
+    
+    c_hats[z]<-c_hat
+    if(c_hat<1){### fail safe again.... 
+      w_start_jk<-apply(omegas_org[(z-11):(z-1),],2 ,median)/
+        sum(apply(omegas_org[(z-11):(z-1),],2 ,median))
+      w_start_adj<-apply(omegas_org[(z-11):(z-1),],2 ,median)/
+        sum(apply(omegas_org[(z-11):(z-1),],2 ,median))  
+    }
+    omegas_jk[z,]<-w_start_jk
+    omegas_adj[z,]<-w_start_adj  
+    w_start<-w_start_adj
   
-  c_hats[z]<-c_hat
-  if(c_hat<1){
-    w_start_jk<-apply(omegas_org[(z-11):(z-1),],2 ,median)/sum(apply(omegas_org[(z-11):(z-1),],2 ,median))
-    w_start_adj<-apply(omegas_org[(z-11):(z-1),],2 ,median)/sum(apply(omegas_org[(z-11):(z-1),],2 ,median))  
-  }
-  omegas_jk[z,]<-w_start_jk
-  omegas_adj[z,]<-w_start_adj  
-  
-  }else{
+    }else{
     w_start_jk<-w_start
     w_start_adj<-w_start
+    omegas_jk[z,]<-w_start_jk
+    omegas_adj[z,]<-w_start_adj  
   }
   #### Step 7 ####
   Outer7<-rdiffpois_array_paper(data_rdiff=(train_data_l%>%
-                                 dplyr::select(-c("Incoming", "Outgoing"))),
+                                              dplyr::select(-c("Incoming", "Outgoing"))),
                                 IMSTEP=I_Mstep,
                                 w_sim=w_start_adj,
                                 max.k=1000)
@@ -717,25 +741,20 @@ for(z in 401:runs1){
   omegas_org[z,]<-w_start
   modellist[[z]]<-I_Mstep
   
-  
-  
   logLike[z]<-sum(log(pskellam(q=Outer7$data$Diff, 
                                lambda1=Outer7$data$Incoming, 
                                lambda2=Outer7$data$Outgoing)))
-  w_start<-w_start_adj
+  
   Sum_z<-Off_cal(w_hat=w_start, 
-          data_off=Outer7$data_all[, c("districtId", "date", "Incoming",
-                                     "Outgoing")])
+                 data_off=Outer7$data_all[, c("districtId", "date", "Incoming",
+                                                                    "Outgoing")])
   
-  IncomOutgo[[z]]<-suppressMessages(as.data.frame(Outer7$data[,c("districtId", "date", 
-                                                                 "Incoming", "Outgoing")])%>%
+  IncomOutgo[[z]]<-suppressMessages(as.data.frame(Outer7$data[,
+                                                  c("districtId", "date", 
+                                                    "Incoming", "Outgoing")])%>%
     full_join(cbind(Sum_z[c("date", "districtId")], "Sum_w"=t(w_start%*%t(Sum_z[, 
-                                                 grepl("Incoming_", names(Sum_z))])))))
+                                grepl("Incoming_", names(Sum_z))])))))
   
-  # re_model[[z]]<-glm(as.formula(paste0("Outgoing~-1+", 
-  #                   paste0(names(Sum_z)[grepl("Incoming_", names(Sum_z))], collapse = "+ "))), 
-  #                   data=Sum_z, family="poisson")
-  # sqrt(diag(vcov(re_model[[z]])))
   print(paste("Done with", z, "outof", runs1, "runs"))
 }
 
@@ -756,22 +775,22 @@ cumsum(apply(omegas_adj[360:400,], 2, median))
 Exit_rates<-ggplot()+
   geom_hline(aes(yintercept=1/(max_lag), col="1/30"))+
   geom_ribbon(aes(x=1:(max_lag-1), ymin=apply(omegas_adj[360:400,], 
-        2, median)[-30]/sum(apply(omegas_adj[360:400,], 
-                             2, median))-1.96*sqrt(diag(solve(apply(VCOV[360:400,,], 
-                        c(2,3), median))))[-30], ymax=apply(omegas_adj[360:400,], 
-                         2, median)[-30]/sum(apply(omegas_adj[360:400,], 
-                           2, median))+1.96*sqrt(diag(solve(apply(VCOV[360:400,,], 
-                c(2,3), median))))[-30], 
-        fill="95% Confidence interval"))+
-    geom_line(aes(x=1:(max_lag-1), y=(apply(omegas_adj[360:400,], 
-                                            2, median)/sum(apply(omegas_adj[360:400,], 
-                                                                 2, median)))[-30],
-                  col="Exit Rate"))+
+                                              2, median)[-30]/sum(apply(omegas_adj[360:400,], 
+                                                                        2, median))-1.96*sqrt(diag(solve(apply(VCOV[360:400,,], 
+                                                                                                               c(2,3), median))))[-30], ymax=apply(omegas_adj[360:400,], 
+                                                                                                                                                   2, median)[-30]/sum(apply(omegas_adj[360:400,], 
+                                                                                                                                                                             2, median))+1.96*sqrt(diag(solve(apply(VCOV[360:400,,], 
+                                                                                                                                                                                                                    c(2,3), median))))[-30], 
+                  fill="95% Confidence interval"))+
+  geom_line(aes(x=1:(max_lag-1), y=(apply(omegas_adj[360:400,], 
+                                          2, median)/sum(apply(omegas_adj[360:400,], 
+                                                               2, median)))[-30],
+                col="Exit Rate"))+
   theme_pubr()+
   labs(color=" ")+
   ggtitle("Bias adjusted exit rate")+
-          # paste0("Median adjustment scale ", round(median(C_hat[360:400]), 
-          #                                          2)))+
+  # paste0("Median adjustment scale ", round(median(C_hat[360:400]), 
+  #                                          2)))+
   ylab("Value of exit rate")+ 
   scale_colour_manual(values = brewer.pal(n = 5, name = "Blues")[4:5])+
   scale_fill_manual(values = brewer.pal(n = 5, name = "Blues")[2:5])+
@@ -787,23 +806,23 @@ Exit_rates
 Exit_rates<-ggplot()+
   geom_hline(aes(yintercept=1/(max_lag), col="1/30"))+
   geom_ribbon(aes(x=1:(max_lag-1), ymin=apply(omegas_adj[360:400,], 
-        2, median)[-30]/sum(apply(omegas_adj[360:400,], 
-                             2, median))-1.96*sqrt(diag(solve(apply(VCOV[360:400,,], 
-                        c(2,3), median))))[-30], ymax=apply(omegas_adj[360:400,], 
-                         2, median)[-30]/sum(apply(omegas_adj[360:400,], 
-                           2, median))+1.96*sqrt(diag(solve(apply(VCOV[360:400,,], 
-                c(2,3), median))))[-30], 
-        fill="95% Confidence interval"))+
-    geom_line(aes(x=1:(max_lag-1), y=(apply(omegas_adj[360:400,], 
-                                            2, median)/sum(apply(omegas_adj[360:400,], 
-                                                                 2, median)))[-30],
-                  col="Exit Rate"))+
+                                              2, median)[-30]/sum(apply(omegas_adj[360:400,], 
+                                                                        2, median))-1.96*sqrt(diag(solve(apply(VCOV[360:400,,], 
+                                                                                                               c(2,3), median))))[-30], ymax=apply(omegas_adj[360:400,], 
+                                                                                                                                                   2, median)[-30]/sum(apply(omegas_adj[360:400,], 
+                                                                                                                                                                             2, median))+1.96*sqrt(diag(solve(apply(VCOV[360:400,,], 
+                                                                                                                                                                                                                    c(2,3), median))))[-30], 
+                  fill="95% Confidence interval"))+
+  geom_line(aes(x=1:(max_lag-1), y=(apply(omegas_adj[360:400,], 
+                                          2, median)/sum(apply(omegas_adj[360:400,], 
+                                                               2, median)))[-30],
+                col="Exit Rate"))+
   theme_pubr()+
   labs(color=" ")+
   ggtitle("Bias adjusted exit rate", 
           paste0("Median estimate pull towards 1/30, c=", round(median(sqrt(c_hats), na.rm=TRUE), 2)))+
-          # paste0("Median adjustment scale ", round(median(C_hat[360:400]), 
-          #                                          2)))+
+  # paste0("Median adjustment scale ", round(median(C_hat[360:400]), 
+  #                                          2)))+
   ylab(expression(hat(omega)))+ 
   scale_colour_manual(values = brewer.pal(n = 5, name = "Blues")[4:5])+
   scale_fill_manual(values = brewer.pal(n = 5, name = "Blues")[2:5])+
@@ -929,12 +948,12 @@ smooth_names<-colnames(predict(modellist[[1]], type="lpmatrix"))
 
 coeffcients_smooth<-apply(matrix(unlist(lapply(modellist[200:400], coef)), 
                                  byrow=TRUE, ncol=length(coef(modellist[[200]]))), 
-                  2,median)[grepl("long", smooth_names)]
+                          2,median)[grepl("long", smooth_names)]
 BasisFn_smooth<-predict(modellist[[1]], newdata=train_data_l, type="lpmatrix")[,grepl("long", smooth_names)]
 SmoothEst<-unique(cbind(train_data_l[, c("date", "districtId")], 
-                 "SmoothEff"=t(coeffcients_smooth%*%t(BasisFn_smooth)))%>%
-  full_join(train_data_l)%>%
-  dplyr::select(districtId, SmoothEff, geometry))%>%
+                        "SmoothEff"=t(coeffcients_smooth%*%t(BasisFn_smooth)))%>%
+                    full_join(train_data_l)%>%
+                    dplyr::select(districtId, SmoothEff, geometry))%>%
   drop_na()%>%
   st_as_sf(crs = 4326)
 
@@ -974,8 +993,8 @@ mapsmooth<-ggplot() +
   geom_sf(data = cities_sf, color = "black", size = 2) +  # Add points for cities
   geom_text(data = cities_sf, aes(label = city, geometry = geometry), 
             stat = "sf_coordinates", nudge_y = 0.4, size = 4, color = "black")#+
- # scale_fill_gradient2(low="#BFDDF6", mid = "lightgrey", high = "#4A80C0", name = expression({{hat(f^1)}}(long, lat))) 
-  
+# scale_fill_gradient2(low="#BFDDF6", mid = "lightgrey", high = "#4A80C0", name = expression({{hat(f^1)}}(long, lat))) 
+
 mapsmooth
 
 
@@ -984,23 +1003,23 @@ mapsmooth
 
 
 coeffcients_smooth_t<-apply(matrix(unlist(lapply(modellist[200:400], coef)), 
-                                 byrow=TRUE, ncol=length(coef(modellist[[200]]))), 
-                          2,median)[grepl("date", smooth_names)]
+                                   byrow=TRUE, ncol=length(coef(modellist[[200]]))), 
+                            2,median)[grepl("date", smooth_names)]
 
 coeffcients_smooth_t_min<-apply(matrix(unlist(lapply(modellist[200:400], coef)), 
-                                   byrow=TRUE, ncol=length(coef(modellist[[200]]))), 
-                            2,quantile, 0.025)[grepl("date", smooth_names)]
+                                       byrow=TRUE, ncol=length(coef(modellist[[200]]))), 
+                                2,quantile, 0.025)[grepl("date", smooth_names)]
 coeffcients_smooth_t_max<-apply(matrix(unlist(lapply(modellist[200:400], coef)), 
                                        byrow=TRUE, ncol=length(coef(modellist[[200]]))), 
                                 2,quantile, 0.975)[grepl("date", smooth_names)]
 
 BasisFn_smooth_t<-predict(modellist[[1]], newdata=train_data_l, type="lpmatrix")[,grepl("date", smooth_names)]
 SmoothEst_t<-unique(cbind(train_data_l[, c("date", "districtId")], 
-                        "SmoothEff"=t(coeffcients_smooth_t%*%t(BasisFn_smooth_t)),
-                        "SmoothEff_2.5"=t(coeffcients_smooth_t_min%*%t(BasisFn_smooth_t)),
-                        "SmoothEff_97.5"=t(coeffcients_smooth_t_max%*%t(BasisFn_smooth_t)))%>%
-                    full_join(train_data_l)%>%
-                    dplyr::select(date, SmoothEff, SmoothEff_2.5, SmoothEff_97.5))%>%
+                          "SmoothEff"=t(coeffcients_smooth_t%*%t(BasisFn_smooth_t)),
+                          "SmoothEff_2.5"=t(coeffcients_smooth_t_min%*%t(BasisFn_smooth_t)),
+                          "SmoothEff_97.5"=t(coeffcients_smooth_t_max%*%t(BasisFn_smooth_t)))%>%
+                      full_join(train_data_l)%>%
+                      dplyr::select(date, SmoothEff, SmoothEff_2.5, SmoothEff_97.5))%>%
   unique()
 
 
@@ -1042,10 +1061,10 @@ VCOV_coef_med<-apply(VCOV_coef_arr, c(2,3), median)
 
 
 coef_fix<-cbind(names(coef(modellist[[200]])[1:10]),
-      round(apply(matrix(unlist(lapply(modellist[360:400], coef)), 
-                   byrow=TRUE, ncol=length(coef(modellist[[200]]))), 
-            2,median)[1:10], 3),
-      round(sqrt(diag(VCOV_coef_med))[1:10], 3))
+                round(apply(matrix(unlist(lapply(modellist[360:400], coef)), 
+                                   byrow=TRUE, ncol=length(coef(modellist[[200]]))), 
+                            2,median)[1:10], 3),
+                round(sqrt(diag(VCOV_coef_med))[1:10], 3))
 
 colnames(coef_fix)<-c("Covariates", "Coefficients", "Std Dev")
 
@@ -1072,10 +1091,10 @@ coeffimed<-apply(matrix(unlist(lapply(modellist[360:400], coef)),
                  2,median)
 
 Matrix_Coef<-matrix(unlist(lapply(modellist[360:400], coef)), 
-       byrow=TRUE, ncol=length(coef(modellist[[200]])))
+                    byrow=TRUE, ncol=length(coef(modellist[[200]])))
 Matrix_Coef_med_rep<-matrix(rep(coeffimed, nrow(Matrix_Coef)), 
                             ncol=length(coef(modellist[[200]])),
-            byrow=TRUE)
+                            byrow=TRUE)
 
 varianceRuns<-360:400
 
@@ -1095,10 +1114,10 @@ for(i in 1:length(varianceRuns)){
 }
 
 coef_fix_v<-cbind(names(coef(modellist[[200]])[1:10]),
-                round(apply(matrix(unlist(lapply(modellist[360:400], coef)), 
-                                   byrow=TRUE, ncol=length(coef(modellist[[200]]))), 
-                            2,median)[1:10], 3),
-                round(sqrt(diag(apply(VCOV_sum, c(2,3), mean)))[1:10], 3))
+                  round(apply(matrix(unlist(lapply(modellist[360:400], coef)), 
+                                     byrow=TRUE, ncol=length(coef(modellist[[200]]))), 
+                              2,median)[1:10], 3),
+                  round(sqrt(diag(apply(VCOV_sum, c(2,3), mean)))[1:10], 3))
 
 colnames(coef_fix_v)<-c("Covariates", "Coefficients", "Std Dev")
 
@@ -1109,23 +1128,23 @@ coef_fix_v
 varianceRuns<-360:400
 
 coef_med<-apply(matrix(unlist(lapply(modellist[varianceRuns], coef)),
-  ncol=length(lapply(modellist[varianceRuns], coef)[[1]]),
-  byrow=TRUE), 2, median)
+                       ncol=length(lapply(modellist[varianceRuns], coef)[[1]]),
+                       byrow=TRUE), 2, median)
 
 
 VCOV_Coef_Runs_s<-array(0, dim=c(length(varianceRuns), 
-                              ncol=ncol(vcov(modellist[[i]])), 
-                              nrow=nrow(vcov(modellist[[i]]))))
+                                 ncol=ncol(vcov(modellist[[i]])), 
+                                 nrow=nrow(vcov(modellist[[i]]))))
 VCOV_Coef_Runs_b<-array(0, dim=c(length(varianceRuns), 
                                  ncol=ncol(vcov(modellist[[i]])), 
                                  nrow=nrow(vcov(modellist[[i]]))))
 
 VCOV_Coef_Runs_w_s<-array(0, dim=c(length(varianceRuns), 
-                                 ncol=max_lag-1, 
-                                 nrow=max_lag-1))
+                                   ncol=max_lag-1, 
+                                   nrow=max_lag-1))
 VCOV_Coef_Runs_w_b<-array(0, dim=c(length(varianceRuns), 
-                                 ncol=max_lag-1, 
-                                 nrow=max_lag-1))
+                                   ncol=max_lag-1, 
+                                   nrow=max_lag-1))
 estimated_adj_w<-apply(omegas_adj[varianceRuns,], 2, median)/sum(apply(omegas_adj[varianceRuns,], 2, median))
 for(i in varianceRuns){
   VCOV_Coef_Runs_b[(i)-min(varianceRuns)+1,,]<-
@@ -1209,12 +1228,12 @@ ggsave(mapsmooth, file="SmoothEff.pdf",
 
 
 TotalCases_min<-as.data.frame(readRDS("DIVI_2022-10-27.rds")%>%
-                            filter(as.Date(date)%in%unique(train_data_l$date))%>%
-                            na.omit()%>%
-                            dplyr::group_by(gemeindeschluessel)%>%
-                            dplyr::summarize(min_cap=max((betten_frei+betten_belegt), na.rm = TRUE))%>%
-                            mutate(districtId=as.character(gemeindeschluessel))%>%
-                            full_join(SmoothEst))%>%
+                                filter(as.Date(date)%in%unique(train_data_l$date))%>%
+                                na.omit()%>%
+                                dplyr::group_by(gemeindeschluessel)%>%
+                                dplyr::summarize(min_cap=max((betten_frei+betten_belegt), na.rm = TRUE))%>%
+                                mutate(districtId=as.character(gemeindeschluessel))%>%
+                                full_join(SmoothEst))%>%
   na.replace(0)%>%
   st_as_sf(crs = 4326)%>%
   arrange(min_cap)
@@ -1224,12 +1243,12 @@ TotalCases_min<-as.data.frame(readRDS("DIVI_2022-10-27.rds")%>%
 
 
 TotalCases<-as.data.frame(readRDS("DIVI_2022-10-27.rds")%>%
-  filter(as.Date(date)%in%unique(train_data_l$date))%>%
-    na.omit()%>%
-  dplyr::group_by(gemeindeschluessel)%>%
-  dplyr::summarize(max_cov=max(faelle_covid_aktuell/(betten_frei+betten_belegt+0.00001)*100, na.rm = TRUE))%>%
-  mutate(districtId=as.character(gemeindeschluessel))%>%
-  full_join(SmoothEst))%>%
+                            filter(as.Date(date)%in%unique(train_data_l$date))%>%
+                            na.omit()%>%
+                            dplyr::group_by(gemeindeschluessel)%>%
+                            dplyr::summarize(max_cov=max(faelle_covid_aktuell/(betten_frei+betten_belegt+0.00001)*100, na.rm = TRUE))%>%
+                            mutate(districtId=as.character(gemeindeschluessel))%>%
+                            full_join(SmoothEst))%>%
   na.replace(0)%>%
   st_as_sf(crs = 4326)
 
@@ -1249,14 +1268,14 @@ c(TotalCases[TotalCases$gemeindeschluessel=="14612","max_cov"])$max_cov # "SK Do
 
 sort(unique(train_data_l$district))
 unique(train_data_l$districtId[train_data_l$district=="SK Hamburg"|
-                          train_data_l$district=="Berlin"|
-                          train_data_l$district=="SK Dresden"|
-                          train_data_l$district=="SK Stuttgart"|
-                          train_data_l$district=="SK München"|
-                          train_data_l$district=="SK Dortmund"])
+                                 train_data_l$district=="Berlin"|
+                                 train_data_l$district=="SK Dresden"|
+                                 train_data_l$district=="SK Stuttgart"|
+                                 train_data_l$district=="SK München"|
+                                 train_data_l$district=="SK Dortmund"])
 
 
- 
+
 
 
 og_Dist<-readRDS("DIVI_2022-10-27.rds")
@@ -1305,8 +1324,8 @@ MapIntro
 InfectRate<-train_data_l%>%
   group_by(date)%>%
   dplyr::summarize(Infec_3559=mean(G_4_7), Infec_6079=mean(G_5_7), 
-            Infec_80=mean(G_6_7))
-  
+                   Infec_80=mean(G_6_7))
+
 
 InfectRatePlot<-ggplot(InfectRate)+
   geom_line(aes(x=date, y=Infec_3559, col="Age group 35-59"), size=1.2)+
@@ -1331,7 +1350,7 @@ IncomingGermany_true<-DIVI_cap[,c("datum", "bundesland_id", "bundesland_name", "
 
 
 IncomingGermany_est<-merge(cbind(InOutIt[, c("date", "districtId")], "EstIn"=apply(InOutIt[, grepl(c("Incoming"), names(InOutIt))][, 356:396], 1, median)),
-  cbind(InOutIt[, c("date", "districtId")], "EstOut"=apply(InOutIt[, grepl(c("Outgoing"), names(InOutIt))][, 356:396], 1, median)))%>%
+                           cbind(InOutIt[, c("date", "districtId")], "EstOut"=apply(InOutIt[, grepl(c("Outgoing"), names(InOutIt))][, 356:396], 1, median)))%>%
   mutate(bundesland_id=floor(as.numeric(districtId)/1000))%>%
   dplyr::group_by(date, bundesland_id)%>%
   dplyr::summarize(IncomEst=sum(EstIn))
@@ -1349,7 +1368,7 @@ est_vs_true_plot<-ggplot(est_vs_true)+
   scale_colour_manual(values = brewer.pal(n = 5, name = "Blues")[c(3,6)])+
   theme(legend.title = element_blank())+
   ggtitle("RKI reported vs Estimated")
-  
+
 ggsave(est_vs_true_plot, file="RKIvsEst.pdf", height=10, width=10)
 
 
