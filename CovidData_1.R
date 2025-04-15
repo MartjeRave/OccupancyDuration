@@ -583,7 +583,7 @@ sim_data_jk<-function(w=median,
 ######################################################
 ############## Date ##################################
 ######################################################
-load("C:/Users/ra98jiq/Documents/GitHub/OccupancyDuration/training_data.rds")
+load("training_data.rds")
 train_data_l<-train_data_total%>%
   mutate(date=as.Date(date))%>%
   filter(date<=as.Date("2021-12-31")&date>=as.Date("2021-08-01"))%>%
