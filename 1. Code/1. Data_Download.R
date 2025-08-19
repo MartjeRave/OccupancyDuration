@@ -1,38 +1,38 @@
-####################
-### Set working directory to current folder
-####################
+######################################################
+######### Data Download #########################
+######################################################
 
-function_folder <- "Skellam_share"
+function_folder <- "OccupancyDuration"
 functionpath<-substr(dirname(rstudioapi::getSourceEditorContext()$path), 
                      1, unlist(gregexpr(function_folder, 
                                         dirname(rstudioapi::getSourceEditorContext()$path)))+(nchar(function_folder)-1))
 
 
-source(paste0(functionpath, "/0. Functions/Functions.R"))
+source(paste0(functionpath, "/1. Code/0. Functions.R"))
 
 ################################################################################
 ############## Downloaded on the 27.10.2022 ####################################
 ################################################################################
+# FYI: The data sources have changed since download and cannot be downloaded in the old manner anymore
 
 
-path.data <- paste0(functionpath, "/2. Data/1. Data Download/RKI DIVI in analysis")  
+
+path.data <- paste0(functionpath, "/2. Data")  
 
 #### DIVI ######################################################################
 
 
 setwd(path.data)
 
-Divi<-read_csv("https://diviexchange.blob.core.windows.net/%24web/zeitreihe-tagesdaten.csv")
-saveRDS(Divi, file=paste0("DIVI_", Sys.Date(), ".rds"))
-
-# Divi<-readRDS(paste0("DIVI_", Sys.Date(), ".rds"))
+url_DIVI <- "https://raw.githubusercontent.com/robert-koch-institut/Intensivkapazitaeten_und_COVID-19-Intensivbettenbelegung_in_Deutschland/main/Intensivregister_Landkreise_Kapazitaeten.csv"
+data.DIVI <- readr::read_csv(url_DIVI, show_col_types = FALSE)
+saveRDS(data.DIVI, paste0("DIVI_", Sys.Date(), ".rds"))
 
 #### RKI #######################################################################
 
-
-data.RKI <- read_csv("https://www.arcgis.com/sharing/rest/content/items/f10774f1c63e40168479a1feb6c7ca74/data")
-
-data.RKI<-data.RKI[,-1]
+url_RKI <- "https://media.githubusercontent.com/media/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/refs/heads/main/Aktuell_Deutschland_SarsCov2_Infektionen.csv"
+data.RKI <- readr::read_csv(url_RKI, show_col_types = FALSE)
+saveRDS(data.RKI, paste0("RKI_", Sys.Date(), ".rds"))
 
 data.RKI$districtId<-as.numeric(data.RKI$IdLandkreis)
 data.RKI <- data.RKI[which(data.RKI$districtId != 3152), ] ### 3152 is not a district anymore

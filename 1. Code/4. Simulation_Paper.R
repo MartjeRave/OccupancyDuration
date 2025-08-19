@@ -1,83 +1,18 @@
+######################################################
+######### Model sEM applied to COVID-19 ##############
+######################################################
+
+function_folder <- "OccupancyDuration"
+functionpath<-substr(dirname(rstudioapi::getSourceEditorContext()$path), 
+                     1, unlist(gregexpr(function_folder, 
+                                        dirname(rstudioapi::getSourceEditorContext()$path)))+(nchar(function_folder)-1))
+setwd(functionpath)
 
 ######################################################
-######### Setting path to wd  ########################
+######### Libraries ##################################
 ######################################################
 
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-
-######################################################
-######### Simulation Model Application ###############
-######################################################
-library(abind)
-library(sqldf)
-library(lubridate)
-library(tidyverse)
-library(plyr)
-library(zoo)
-library(glmnet)
-library(readxl)
-library(glmmLasso)
-library(shapefiles)
-library(sp)
-library(psych)
-library(ggplot2)
-#library(rgeos)
-library(skellam)
-#library(maptools)
-library(RColorBrewer)
-library(gridExtra)
-#library(rgeos)
-library(sf)
-library(terra)
-install.packages("rgdal")
-library(leaflet)
-library(fitdistrplus)
-library(lme4)
-library(skellam)
-library(mgcv)
-library(splines)
-library(dplyr)
-library(plotmo)
-library(readxl)
-library(corrplot)
-library(forecast)
-library(RColorBrewer)
-library(MLmetrics)
-library(Hmisc)
-library(psych)
-library(ggdendro)
-library(cluster)
-library(ISLR)
-library(gam)
-library(VGAM)
-library(cowplot)
-library(miceadds)
-library(gtable)
-library(ggpubr)
-library(scales)
-library(colorspace)
-library(readr)
-library(taskscheduleR)
-library(Rmisc)
-library(sf)
-library(readr)
-library(readxl)
-library(dplyr)
-library(lubridate)
-library(lazyWeave)
-library(dplyr)
-library(kableExtra)
-library(gtools)
-library(mgcv)
-library(cowplot)
-library(mefa)
-library(quadprog)
-library(data.table)
-library(abind)
-library(mefa)
-library(quadprog)
-library(data.table)
-library(abind)
+source(paste0(functionpath, "/1. Code/0. Functions.R"))
 
 ######################################################
 ##### Offset calculation through lagged incoming #####
