@@ -3,7 +3,7 @@
 ######### Setting path to wd  ########################
 ######################################################
 
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+setwd(substr(dirname(rstudioapi::getActiveDocumentContext()$path),1, nchar(dirname(rstudioapi::getActiveDocumentContext()$path))-8))
 
 ######################################################
 ######### Simulation Model Application ###############

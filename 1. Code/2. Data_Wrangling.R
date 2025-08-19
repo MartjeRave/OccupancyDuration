@@ -1,9 +1,12 @@
+######################################################
+######### Data Wrangling #############################
+######################################################
+# FYI: There has been a change in platforms for which the data is published. 
+# Thereby the wrangling may have changed
+# for replicability this wrangling pertains to data downloaded on the 
 
-####################
-### Set working directory to current folder
-####################
 
-function_folder <- "Skellam_share"
+function_folder <- "OccupancyDuration"
 functionpath<-substr(dirname(rstudioapi::getSourceEditorContext()$path), 
                      1, unlist(gregexpr(function_folder, 
                                         dirname(rstudioapi::getSourceEditorContext()$path)))+(nchar(function_folder)-1))
@@ -15,12 +18,15 @@ setwd(functionpath)
 ####################
 
 
-source("0. Functions/Functions.R")
+source(paste0(functionpath, "/1. Code/0. Functions.R"))
 
 
-#### Read in ####
+#### Read in #### DATA IN DROPBOX (Can be downloaded manually)
+### https://www.dropbox.com/scl/fo/a5do9x3rik8wpzzb9685n/h?rlkey=fle6gv7gypr41etuivjqxg34a&dl=0
+### Make sure that the functionpath corresponds to where you have downloaded the data to- so that you can access all data in this wrangling script
+### NB: The functionpath is set up to include the folder structure in the dorpbox zip file. 
 
-Divi<-readRDS("2. Data/1. Data Download/RKI DIVI in analysis/DIVI_2022-10-27.rds")
+Divi<-readRDS("2. Data/DIVI_2022-10-27.rds")
 
 Divi$daten_stand<-as.Date(Divi$date)
 Divi$betten_belegt<-Divi$betten_belegt-Divi$faelle_covid_aktuell
@@ -41,7 +47,7 @@ if(any(sqldf("SELECT gemeindeschluessel, daten_stand, Count(*) AS COUNT_ FROM Di
 #### Read in ####
 
 
-RKI<-read_rds("2. Data/1. Data Download/RKI DIVI in analysis/RKI_2022-10-27.rds")
+RKI<-read_rds("2. Data/RKI_2022-10-27.rds")
 
 RKI$age<-as.factor(RKI$age)
 RKI$gender<-as.factor(RKI$gender)
@@ -350,7 +356,7 @@ RKI_Divi_lag<-merge(RKI_Divi_lag, unique(RKI_old[,c("district", "districtId")]),
 ############################################################################################
 ##### adding the structure of the districts to the data set. Data was received by Dr Cornelius Fritz, 2021.
 
-load("C:/Users/ra98jiq/Documents/Papers/Skellam_share/2. Data/0. Data Extra/district_data.RData")
+load(paste0(functionpath, "/2. Data/0. Data Extra/district_data.RData"))
 
 
 
@@ -359,10 +365,9 @@ RKI_Divi_lag<-merge(RKI_Divi_lag, district_data[,c("lk_id", "long", "lat")], by.
 
 RKI_Divi_lag$district[RKI_Divi_lag$districtId=="11000"]<-"SK Berlin"
 
-# save.image(file="C:/Users/ra98jiq/Documents/Papers/Skellam/Skellam/dec_01_12.Rdata")
 
 
-depri<-read_excel("C:/Users/ra98jiq/LRZ Sync+Share/Corona/Data/Demographics/deprivation.xlsx")
+depri<-read_excel(paste0(functionpath, "/2. Data/0. Data Extra/deprivation.xlsx"))
 #### ABGLEICHUNG VON LANDKREISEN!!!!! ########
 depri$AGS[depri$AGS=="13002000"|
             depri$AGS=="13052000"|
@@ -407,7 +412,7 @@ RKI_Divi_lag<- RKI_Divi_lag[RKI_Divi_lag$districtId!=16056,]
 
 RKI_Divi_lag$weekday<-as.character(wday(RKI_Divi_lag$date, label=TRUE))
 
-saveRDS(RKI_Divi_lag, "C:/Users/ra98jiq/Documents/Papers/Skellam_share/2. Data/2. Training Data/training_data.rds")
+saveRDS(RKI_Divi_lag, paste0(functionpath, "/2. Data/training_data.rds"))
 
 # 
-# write.csv(RKI_Divi_lag, file="C:/Users/ra98jiq/Documents/Papers/Skellam/Skellam/Data/training_data.csv", fileEncoding = "UTF-8")
+# write.csv(RKI_Divi_lag, file= paste0(functionpath, "/2. Data/training_data.csv"), fileEncoding = "UTF-8")

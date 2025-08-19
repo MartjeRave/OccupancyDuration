@@ -3,81 +3,12 @@
 ######### Setting path to wd  ########################
 ######################################################
 
-setwd(substr(dirname(rstudioapi::getActiveDocumentContext()$path),1, nchar(dirname(rstudioapi::getActiveDocumentContext()$path))-8))
+function_folder <- "OccupancyDuration"
+functionpath<-substr(dirname(rstudioapi::getSourceEditorContext()$path), 
+                     1, unlist(gregexpr(function_folder, 
+                                        dirname(rstudioapi::getSourceEditorContext()$path)))+(nchar(function_folder)-1))
 
-######################################################
-######### Simulation Model Application ###############
-######################################################
-library(abind)
-library(sqldf)
-library(lubridate)
-library(tidyverse)
-library(plyr)
-library(zoo)
-library(glmnet)
-library(readxl)
-library(glmmLasso)
-library(shapefiles)
-library(sp)
-library(psych)
-library(ggplot2)
-#library(rgeos)
-library(skellam)
-#library(maptools)
-library(RColorBrewer)
-library(gridExtra)
-#library(rgeos)
-library(sf)
-library(terra)
-install.packages("rgdal")
-library(leaflet)
-library(fitdistrplus)
-library(lme4)
-library(skellam)
-library(mgcv)
-library(splines)
-library(dplyr)
-library(plotmo)
-library(readxl)
-library(corrplot)
-library(forecast)
-library(RColorBrewer)
-library(MLmetrics)
-library(Hmisc)
-library(psych)
-library(ggdendro)
-library(cluster)
-library(ISLR)
-library(gam)
-library(VGAM)
-library(cowplot)
-library(miceadds)
-library(gtable)
-library(ggpubr)
-library(scales)
-library(colorspace)
-library(readr)
-library(taskscheduleR)
-library(Rmisc)
-library(sf)
-library(readr)
-library(readxl)
-library(dplyr)
-library(lubridate)
-library(lazyWeave)
-library(dplyr)
-library(kableExtra)
-library(gtools)
-library(mgcv)
-library(cowplot)
-library(mefa)
-library(quadprog)
-library(data.table)
-library(abind)
-library(mefa)
-library(quadprog)
-library(data.table)
-library(abind)
+setwd(functionpath)
 
 ######################################################
 ##### Offset calculation through lagged incoming #####
@@ -106,8 +37,12 @@ Off_cal<-function(data_off=datalist[[j]], w_hat=w_true){
 ############### Simulating data  #####################
 ######################################################
 
-sim_data_offset<-function(w=w_true,
+
+
+sim_data_offset<-function(w=w_true_Grid[1,],
                           districtId_sim=1:200, 
+                          misspecified=c(TRUE, FALSE),
+                          theta_mis=1.5,
                           date_sim=1:(200+ncol(w_true_Grid)),
                           ss=123, deterministic=TRUE,
                           with_coef=TRUE){
@@ -120,7 +55,11 @@ sim_data_offset<-function(w=w_true,
     N<-rgamma(length(districtId_sim)*
                 length(date_sim),0.1,0.5)
     M<-rep(rgamma(length(districtId_sim),1,3), each=length(date_sim))
-    Incoming <- rpois(length(M), lambda=exp(0.5+1*M+0.2*N))    
+    Incoming <- if(misspecified){
+      MASS::rnegbin(length(M), mu=exp(0.5+1*M+0.2*N), theta=theta_mis)
+    }else{
+      rpois(length(M), lambda=exp(0.5+1*M+0.2*N))
+      }    
     
     data_sim<-as.data.frame(cbind("date"=rep(date_sim, 
                                              times=length(districtId_sim)), 
@@ -157,7 +96,7 @@ sim_data_offset<-function(w=w_true,
       names(lag)<-c("date", paste0("Incom_lag",i), "districtId")
       data_tot<- suppressMessages( data_tot%>%
                                      full_join(lag, by=c("date", "districtId"))%>%
-                                     na.replace(replace=0))
+                                     replace(is.na(.), 0))
     }
     data_tot<-data_tot%>%
       filter(date>=min(data_sim$date)+length(w)&
@@ -358,7 +297,7 @@ rdiffpois_array_paper =function(data_rdiff=preptrain_try,
   set.seed(123)
   
   
-  Lagged_Data<-rep(data_rdiff[data_rdiff$date==min(data_rdiff$date),], (length(w_sim)+1))%>%
+  Lagged_Data<-(rep(data_rdiff[data_rdiff$date==min(data_rdiff$date),], (length(w_sim)+1)))%>%
     mutate(date=date-rep(1:(length(w_sim)+1), each=length(unique(data_rdiff$districtId))))%>%
     rbind(data_rdiff)%>%
     arrange(date, districtId)
@@ -556,11 +495,13 @@ w_true_Grid[3,]<-w_true_Grid[3,]/sum(w_true_Grid[3,])
 ######################################################
 
 datalist<-list()
-for(j in 311:311){
+for(j in 311){
   for(i in 1:nrow(w_true_Grid)){
     datalist[[length(datalist)+1]]<-sim_data_offset(w=w_true_Grid[i,],
                                                     districtId_sim=1:200, 
                                                     date_sim=1:(200+ncol(w_true_Grid)),
+                                                    misspecified = TRUE,
+                                                    theta_mis=0.5,
                                                     ss=j, 
                                                     deterministic=TRUE,
                                                     with_coef=TRUE)
@@ -803,7 +744,7 @@ for(z in 1:runs1){
     
   }
   print(paste("Inner iteration", z, "out of", runs1, "is done"))
- 
+  
 }
 
 ############ Results Plots ###############################################################################
@@ -817,8 +758,8 @@ varianceRuns<-200:400
 
 coefratemed<-apply(Coeff_in[varianceRuns, 2:4], 2, median)
 VCOV_Coef_Runs_b<-array(0, dim=c(length(varianceRuns), 
-                               ncol=ncol(vcov(modellist[[1]])), 
-                               nrow=nrow(vcov(modellist[[1]]))))
+                                 ncol=ncol(vcov(modellist[[1]])), 
+                                 nrow=nrow(vcov(modellist[[1]]))))
 VCOV_Coef_Runs_s<-array(0, dim=c(length(varianceRuns), 
                                  ncol=ncol(vcov(modellist[[1]])), 
                                  nrow=nrow(vcov(modellist[[1]]))))
@@ -830,28 +771,112 @@ for(i in varianceRuns){
     vcov(modellist[[i]])
 }
 
+write.csv(Coeff_in, file="4. Simulation/Coef_In_Mis_05.csv")
+save(modellist, file="4. Simulation/modellist_Mis_05.R")
+write.csv(omegas_adj, file="4. Simulation/Exitrate_In_Mis_05.csv")
+
+Coeff_in_05<-read.csv("4. Simulation/Coef_In_Mis_05.csv")
+Coeff_in_1<-read.csv("4. Simulation/Coef_In_Mis_1.csv")
+Coeff_in_5<-read.csv("4. Simulation/Coef_In_Mis_5.csv")
+Coeff_in_10<-read.csv("4. Simulation/Coef_In_Mis_10.csv")
 
 
-coefratemed-1.96*sqrt(diag(apply(VCOV_Coef_Runs_s, c(2,3), mean)+(1+(length(varianceRuns)-1)^(-1))*apply(VCOV_Coef_Runs_b, c(2,3), sum)/(length(varianceRuns)-2)))
-coefratemed+1.96*sqrt(diag(apply(VCOV_Coef_Runs_s, c(2,3), mean)+(1+(length(varianceRuns)-1)^(-1))*apply(VCOV_Coef_Runs_b, c(2,3), sum)/(length(varianceRuns)-2)))
+rbind("True_C"=c(0.5, 1, 0.2),
+  "Coef_05"=apply(Coeff_in_05[200:400, 3:5], 2, median), 
+  "Coef_1"=apply(Coeff_in_1[200:400, 3:5], 2, median), 
+  "Coef_5"=apply(Coeff_in_5[200:400, 3:5], 2, median), 
+  "Coef_10"=apply(Coeff_in_10[200:400, 3:5], 2, median))
+      
 
-stddevadj<-sqrt(diag(apply(VCOV_Coef_Runs, c(2,3), mean)))
+# Create the matrix
+res <- rbind(
+  "True_C" = c(0.5, 1, 0.2),
+  "Coef_05" = apply(Coeff_in_05[200:400, 3:5], 2, median), 
+  "Coef_1" = apply(Coeff_in_1[200:400, 3:5], 2, median), 
+  "Coef_5" = apply(Coeff_in_5[200:400, 3:5], 2, median), 
+  "Coef_10" = apply(Coeff_in_10[200:400, 3:5], 2, median)
+)
 
-exitrate_med<-apply(omegas_adj, 2, median)
+# Round the values for display
+res_round <- round(res, 3)
 
-Prediction<-fitlist[[z-1]]%>%
-  mutate(Incoming_pred=Incoming, Outgoing_pred=Outgoing)%>%
-  dplyr::select(-c("Incoming", "Outgoing"))%>%
-  full_join(datalist[[1]]%>%
-              dplyr::select(names(fitlist[[z-1]])))
-ggplot()+
-  geom_point(aes(x=Prediction$Incoming_pred,y=Prediction$Incoming, col="Incoming"))+
-  geom_line(aes(x=Prediction$Incoming_pred,y=Prediction$Incoming_pred , col="Perf Fit"))+
-  xlab("Estimation")+ylab("True")
-ggplot()+
-  geom_point(aes(x=Prediction$Outgoing_pred,y=Prediction$Outgoing, col="Outgoing"))+
-  geom_line(aes(x=Prediction$Outgoing_pred,y=Prediction$Outgoing_pred , col="Perf Fit"))+
-  xlab("Estimation")+ylab("True")
+# Create LaTeX tabular
+latex_code <- paste0(
+  "\\begin{tabular}{lrrr}\n",
+  "\\toprule\n",
+  " & X.Intercept. & M & N \\\\\n",
+  "\\midrule\n",
+  paste(
+    rownames(res_round),
+    apply(res_round, 1, function(row) paste(sprintf("%.3f", row), collapse = " & ")),
+    sep = " & ",
+    collapse = " \\\\\n"
+  ),
+  " \\\\\n\\bottomrule\n\\end{tabular}"
+)
+
+cat(latex_code)
+
+# \begin{tabular}{lrrr}
+# \toprule
+# & X.Intercept. & M & N \\
+# \midrule
+# True_C & 0.500 & 1.000 & 0.200 \\
+# Coef_05 & 1.269 & 1.925 & 0.099 \\
+# Coef_1 & 0.937 & 1.662 & 0.137 \\
+# Coef_5 & 0.499 & 1.406 & 0.178 \\
+# Coef_10 & 0.487 & 1.025 & 0.219 \\
+# \bottomrule
+# \end{tabular}
+
+Exitrate_in_05<-read.csv("4. Simulation/Exitrate_In_Mis_05.csv")
+Exitrate_in_1<-read.csv("4. Simulation/Exitrate_In_Mis_1.csv")
+Exitrate_in_5<-read.csv("4. Simulation/Exitrate_In_Mis_5.csv")
+Exitrate_in_10<-read.csv("4. Simulation/Exitrate_In_Mis_10.csv")
+
+
+# Create the matrix (copy your data here)
+df <- rbind(
+  "True Coefficient"  = c(w_true_Grid[1, ], 0, 0),
+  "Theta = 0.5" = apply(Exitrate_in_05[200:400, -1], 2, median),
+  "Theta = 1"  = apply(Exitrate_in_1[200:400, -1], 2, median),
+  "Theta = 5"  = apply(Exitrate_in_5[200:400, -1], 2, median),
+  "Theta = 10" = apply(Exitrate_in_10[200:400, -1], 2, median)
+)
+
+# Normalize all but the first row
+df[-1, ] <- df[-1, ] / rowSums(df[-1, ])
+
+# Convert to data frame
+df_long <- as.data.frame(df) %>%
+  mutate(Coef = rownames(.)) %>%
+  pivot_longer(-Coef, names_to = "Position", values_to = "Value") %>%
+  mutate(Position = as.numeric(gsub("V", "", Position)))
+
+diff_leng_stay<-ggplot(df_long, aes(x = Position, y = Value, group = Coef, colour = Coef)) +
+  theme_pubr()+
+  geom_line(data = df_long %>% filter(Coef == "True Coefficient"), size = 1.5) +
+  geom_line(data = df_long %>% filter(Coef != "True Coefficient"), size = 0.7) +
+  geom_point() +
+  scale_x_continuous(breaks = 1:12) +
+  labs(x = "Position", y = "Value", title = "Exit Rates of misspecified models") 
+  
+ggsave(diff_leng_stay, file="4. Simulation/exitrateBias_Mis_1_10.pdf", width =6, height=3 )
+
+
+# Prediction<-fitlist[[z-1]]%>%
+#   mutate(Incoming_pred=Incoming, Outgoing_pred=Outgoing)%>%
+#   dplyr::select(-c("Incoming", "Outgoing"))%>%
+#   full_join(datalist[[1]]%>%
+#               dplyr::select(names(fitlist[[z-1]])))
+# ggplot()+
+#   geom_point(aes(x=Prediction$Incoming_pred,y=Prediction$Incoming, col="Incoming"))+
+#   geom_line(aes(x=Prediction$Incoming_pred,y=Prediction$Incoming_pred , col="Perf Fit"))+
+#   xlab("Estimation")+ylab("True")
+# ggplot()+
+#   geom_point(aes(x=Prediction$Outgoing_pred,y=Prediction$Outgoing, col="Outgoing"))+
+#   geom_line(aes(x=Prediction$Outgoing_pred,y=Prediction$Outgoing_pred , col="Perf Fit"))+
+#   xlab("Estimation")+ylab("True")
 
 ######################################################
 ############## Exit Rate Estimation ##################
@@ -864,8 +889,8 @@ VCOV_Exit_Runs<-array(0, dim=c(length(varianceRuns),
                                ncol=ncol(VCOV[1,,]), 
                                nrow=nrow(VCOV[1,,])))
 VCOV_Exit_Runs_sum<-array(0, dim=c(length(varianceRuns), 
-                               ncol=ncol(VCOV[1,,]), 
-                               nrow=nrow(VCOV[1,,])))
+                                   ncol=ncol(VCOV[1,,]), 
+                                   nrow=nrow(VCOV[1,,])))
 for(i in varianceRuns){
   VCOV_Exit_Runs[(i)-min(varianceRuns)+1,,]<-solve(VCOV[i,,])
   VCOV_Exit_Runs_sum[(i)-min(varianceRuns)+1,,]<-((omegas_adj[i,]-exitratemed)%*%t(
@@ -889,7 +914,7 @@ Exit_rates<-ggplot()+
                 col="Est. Exit Rate"))+
   theme_pubr()+
   labs(color=" ")+
-  ggtitle("Exit rate", expression(paste(sqrt(hat(c)), "=1.23", sep="")))+
+  ggtitle("Exit rate for misspecified simulated data", expression(paste(sqrt(hat(c)), "=1.23,    theta=0.5", sep="")))+
   geom_point(aes(x=1:11, y=c(w_true_Grid[1,], 0), col="Ground Truth"))+
   ylab(expression(hat(omega)))+ 
   scale_colour_manual(values = brewer.pal(n = 5, name = "Blues")[3:5])+
@@ -899,7 +924,7 @@ Exit_rates<-ggplot()+
   theme(legend.title = element_blank(),
         axis.title.y = element_text(angle = 90))
 
-ggsave(Exit_rates, file="4. Simulation/exitrateBias.pdf", width =5, height=3 )
+ggsave(Exit_rates, file="4. Simulation/exitrateBias_Mis_05.pdf", width =5, height=3 )
 
 
 True_rates<-ggplot()+
@@ -910,7 +935,7 @@ True_rates<-ggplot()+
                  col="Ground Truth"))+
   theme_pubr()+
   labs(color=" ")+
-  ggtitle("Bias adjusted exit rate")+
+  ggtitle("Bias adjusted exit rate", paste("theta=", 5))+
   ylab("Value of exit rate")+ 
   scale_colour_manual(values = brewer.pal(n = 5, name = "Blues")[3:5])+
   scale_fill_manual(values = brewer.pal(n = 5, name = "Blues")[2:5])+
@@ -928,10 +953,10 @@ chat_plot<-ggplot()+
   coord_cartesian(ylim = c(0,1.3), xlim = c(200,400))+
   theme_pubr()+
   labs(color=" ")+
-  ggtitle("b) Estimate of pull towards uniform distribution", "Over runs 200 to 400")+
+  ggtitle("b) Estimate of pull towards uniform distribution", "Over runs 200 to 400,  theta=0.5")+
   xlab("Runs")+ylab(expression(sqrt(hat(c))))+
   scale_colour_manual(values = brewer.pal(n = 5, name = "Blues")[c(5,2)])
-ggsave(plot_grid(Exit_rates, chat_plot), file="EstimatedBias.pdf",
+ggsave(plot_grid(Exit_rates, chat_plot), file="EstimatedBias_Mis_05.pdf",
        width=13, height=4)
 
 
@@ -966,7 +991,7 @@ IncomTrue<-ggplot()+
   theme_pubr()+
   labs(color=" ")+
   scale_colour_manual(values = brewer.pal(n = 5, name = "Blues")[4:6])+ 
-  ggtitle("Incoming")+
+  ggtitle("Incoming",  "theta=0.5")+
   ylab("Estimated Incoming")+ 
   xlab("True Incoming") 
 
@@ -979,13 +1004,15 @@ OutgoTrue<-ggplot()+
   theme_pubr()+
   scale_colour_manual(values = brewer.pal(n = 5, name = "Blues")[4:6])+ 
   labs(color=" ")+
-  ggtitle("Outgoing")+
+  ggtitle("Outgoing",  "theta=0.5")+
   ylab("Estimated Outgoing")+ 
   xlab("True Outgoing") 
 
 
 Est_True<-plot_grid(IncomTrue, OutgoTrue, nrow=1)
-ggsave(Est_True, file="4. Simulation/InOutEstSim.pdf",
+
+
+ggsave(Est_True, file="4. Simulation/InOutEstSim_Mis_05.pdf",
        width=8, height=4)
 
 Exit_rates_gt<-ggplot()+
@@ -1001,7 +1028,7 @@ Exit_rates_gt<-ggplot()+
   scale_x_continuous(breaks = seq(1, max_lag, 1))+
   theme(legend.title = element_blank())
 
-ggsave(Exit_rates_gt, file="4. Simulation/ExitRateGroundTruth.pdf",
+ggsave(Exit_rates_gt, file="4. Simulation/ExitRateGroundTruth_Mis_05.pdf",
        width=5, height=3)
 
 ################################################################################
@@ -1017,7 +1044,12 @@ LogLike<-ggplot()+
   xlab("sEM Iteration")+
   theme(legend.title = element_blank())
 
-ggsave(LogLike, file="4. Simulation/LogLikeSim.pdf", height=3, width=5)
+ggsave(LogLike, file="4. Simulation/LogLikeSim_Mis_05.pdf", height=3, width=5)
+
+
+
+
+
 
 
 
