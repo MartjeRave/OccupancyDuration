@@ -5,10 +5,10 @@ https://arxiv.org/abs/2505.02587
 The folder stores chiefly the following information: 
 1. Code: Code from data download to model fitting - This is your main file for understanding the fitting procedure
 2. Data: Training data stored
-   -> Meta data is stored in: https://www.dropbox.com/scl/fo/a5do9x3rik8wpzzb9685n/h?rlkey=fle6gv7gypr41etuivjqxg34a&dl=0 
+   -> Data is stored in: https://www.dropbox.com/scl/fo/a5do9x3rik8wpzzb9685n/h?rlkey=fle6gv7gypr41etuivjqxg34a&dl=0 
 3. Model: Results from the COVID-19 Data application
 4. Simulation: Results from the Simulation Data
-
+5. Supplementary Material: Supplementary Material
 
 -> Caveat: 
 Both the simulation and the COVID-19 application in 1. Code has its own model functions at the beginning of the script. Make sure that your machine is wiped and you have the correct functions loaded into your R-session. 
