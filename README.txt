@@ -33,6 +33,10 @@ Table 1 -> 4. Simulation_Paper.R
 Table 2 -> 4.3 Simulation_NegativeBinomial.R
 Table 3 -> 3. Model_Covid.R 
 
+Supplementary Material:
+3.1 Model_Covid_Lag_40.R
+
+
 
 The author's current R-version:
 
