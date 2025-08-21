@@ -530,14 +530,6 @@ j_k_data<-list()
 train_data_l=datalist_real[[1]]
 train_data_l_real=datalist[[1]]
 
-omegasList_og<-list()
-omegasList_jk<-list()
-omegasList_adj<-list()
-
-t<-1
-train_data_l=datalist_real[[t]] 
-train_data_l_real=datalist[[t]]
-
 train_data_l<-train_data_l%>%
   arrange(districtId, date)%>%
   mutate(Incoming=sample(10:15,1),
@@ -660,10 +652,6 @@ for(z in 1:runs1){
 
 
 
-
-
-
-
 varianceRuns<-200:400
 
 coefratemed<-apply(Coeff_in[varianceRuns, 2:4], 2, median)
@@ -736,8 +724,9 @@ for(i in varianceRuns){
 # stddevadj<-sqrt(diag(apply(VCOV_Exit_Runs, c(2,3), mean)+((1+1/length(varianceRuns))/(length(varianceRuns)-1))*apply(VCOV_Exit_Runs_sum, c(2,3), sum)))
 exitrate_med<-apply(omegas_adj, 2, median)
 
-
-
+################################################################################
+################# Saving Figure 1  Paper #########################################
+################################################################################
 
 
 Exit_rates<-ggplot()+
@@ -769,7 +758,7 @@ Exit_rates<-ggplot()+
                  col="Est. Exit Rate"))+
   theme_pubr()+
   labs(color=" ")+
-  ggtitle("Exit rate")+
+  ggtitle("a) Exit rate", " ")+
   geom_point(aes(x=1:(max_lag-1), y=(apply(omegas_org[ varianceRuns,], 
                                            2, median))[-12],
                  col="Est. Exit Rate"), shape=15, size=2.5)+
@@ -782,11 +771,143 @@ Exit_rates<-ggplot()+
   scale_x_continuous(breaks = seq(1, max_lag, 1))+
   theme(legend.title = element_blank())
 
+ 
+# ## Step 3 ######## Jack Knife Adjustment  ##################################
+# 
+# omega_org<- apply(omegas_org[ varianceRuns,], 2, median)
+# 
+# w_true_Grid[1,]
+# Jack_Knife_data<-sim_data_jk(w=omega_org,
+#                              ss=123, 
+#                              deterministic=TRUE,
+#                              coef=c(0.5, 1, 0.2),
+#                              covariates=sim_start[,
+#                                                   c("date", "districtId","M", "N")])
+# 
+# train_JK_temp<-Jack_Knife_data[,
+#                                c("date", "districtId","M", "N", "Diff")]
+# 
+# ## Step 4 ######## Jack Knife Adjustment Simulation  #######################
+# 
+# start_sim_jk<-rdiffpois_array_paper(data_rdiff=train_JK_temp,
+#                                     IMSTEP=I_Mstep,
+#                                     w_sim=omega_org)
+# 
+# ## Step 5 ######## Jack Knife Adjustment Omega  ############################
+# w_start_jk<-omega_org
+# ##### Seesaw to find best omega for JK ####
+# for(i in 1:100){
+#   new_sol_jk<-optimize_Like(w_opt_prev=w_start_jk,
+#                             data_like_opp=start_sim_jk$data_all)
+#   
+#   if(sum(((round(c(new_sol_jk$w_sol, 
+#                    1-sum(new_sol_jk$w_sol)), 10)-w_start_jk)^2))<0.0001){
+#     VCOV_w<-solve(new_sol_jk$Infor)
+#     break
+#   }else{
+#     w_start_jk<-round(c(new_sol_jk$w_sol, 
+#                         1-sum(new_sol_jk$w_sol)), 10)
+#   }
+# }
+# if(i==100){print("We have maxed out the runs to find omega")}
+# 
+# omega_jk<-c(w_start_jk, rep(0, max_lag-length(w_start_jk)))
+# 
+# ## Step 6 ######## Jack Knife Adjustment Omega  ############################
+# 
+# biasadj<-bias_adj(w_og=omega_org,
+#                   w_jk=omega_jk,
+#                   max_l=max_lag,
+#                   func="sq")
+# 
 
-Exit_rates
-path<-dirname(rstudioapi::getActiveDocumentContext()$path)
-ggsave(Exit_rates, file=paste0(substr(path, 1, (nchar(path)-nchar("1. Code"))),
-                               "4. Simulation/Unadjusted/exitrateNotAdjNoStd.pdf"), width =5, height=3 )
+
+C_hat<-coef(lm(I((c(w_true_Grid[1,],0,0)-1/max_lag)^2)~I((omega_org-1/max_lag)^2)-1))
+omega_adj<-1/max_lag+ifelse(omega_org<1/max_lag, -1, 1)*sqrt((C_hat)*(omega_org-1/max_lag)^2)
+omega_adj[omega_adj<0]=0
+omega_adj<-omega_adj/sum(omega_adj)
+
+
+
+
+Exit_rates_adj<-ggplot()+
+  geom_segment(aes(x = 1, y = (apply(omegas_org[ varianceRuns,], 
+                                     2, median))[1], xend = 1, yend = w_true_Grid[1,1], col="Bias"))+
+  geom_segment(aes(x = 2, y = (apply(omegas_org[ varianceRuns,], 
+                                     2, median))[2], xend = 2, yend = w_true_Grid[1,2], col="Bias"))+
+  geom_segment(aes(x = 3, y = (apply(omegas_org[ varianceRuns,], 
+                                     2, median))[3], xend = 3, yend = w_true_Grid[1,3], col="Bias"))+
+  geom_segment(aes(x = 4, y = (apply(omegas_org[ varianceRuns,], 
+                                     2, median))[4], xend = 4, yend = w_true_Grid[1,4], col="Bias"))+
+  geom_segment(aes(x = 5, y = (apply(omegas_org[ varianceRuns,], 
+                                     2, median))[5], xend = 5, yend = w_true_Grid[1,5], col="Bias"))+
+  geom_segment(aes(x = 6, y = (apply(omegas_org[ varianceRuns,], 
+                                     2, median))[6], xend = 6, yend = w_true_Grid[1,6], col="Bias"))+
+  geom_segment(aes(x = 7, y = (apply(omegas_org[ varianceRuns,], 
+                                     2, median))[7], xend = 7, yend = w_true_Grid[1,7], col="Bias"))+
+  geom_segment(aes(x = 8, y = (apply(omegas_org[ varianceRuns,], 
+                                     2, median))[8], xend = 8, yend = w_true_Grid[1,8], col="Bias"))+
+  geom_segment(aes(x = 9, y = (apply(omegas_org[ varianceRuns,], 
+                                     2, median))[9], xend = 9, yend = w_true_Grid[1,9], col="Bias"))+
+  geom_segment(aes(x = 10, y = (apply(omegas_org[ varianceRuns,], 
+                                      2, median))[10], xend = 10, yend = w_true_Grid[1,10], col="Bias"))+
+  geom_segment(aes(x = 11, y = (apply(omegas_org[ varianceRuns,], 
+                                      2, median))[11], xend = 11, yend = 0, col="Bias"))+
+  geom_line(aes(x=1:11, y=1/12, col="1/12"), linetype=2)+
+  geom_line(aes(x=1:(max_lag-1), y=(apply(omegas_org[ varianceRuns,], 
+                                          2, median))[-12],
+                col="Est. Exit Rate"))+
+  theme_pubr()+
+  labs(color=" ")+
+  ggtitle("b) Exit rate (ex post adjusted)", expression(sqrt(hat(c))*"="*1.52))+
+  geom_point(aes(x=1:(max_lag-1), y=(apply(omegas_org[ varianceRuns,], 
+                                           2, median))[-12],
+                 col="Est. Exit Rate"), shape=15, size=2.5)+
+  geom_line(aes(x=1:11, y=c(w_true_Grid[1,], 0), col="Ground Truth"))+
+  geom_point(aes(x=1:11, y=c(w_true_Grid[1,], 0), col="Ground Truth"), size=2.5)+
+  ylab(expression(hat(omega)))+ 
+  geom_line(aes(x=1:(max_lag-1), y=(omega_adj[-12]),
+                col="Bias Adj. Exit Rate"))+
+  geom_point(aes(x=1:(max_lag-1), y=(omega_adj[-12]),
+                 col="Bias Adj. Exit Rate"), shape=17, size=2.5)+
+  scale_colour_manual(values = c("grey", "darkgrey", "black", brewer.pal(n = 5, name = "Blues")[c(3, 5)]))+
+  scale_fill_manual(values = c("grey", "darkgrey","black", brewer.pal(n = 5, name = "Blues")[c(3, 5)]))+
+  xlab("Length of stay")+
+  scale_x_continuous(breaks = seq(1, max_lag, 1))+
+  theme(legend.title = element_blank())
+
+Exit_rates_adj
+
+
+
+TR_vs_Est<-ggplot() +
+  geom_point(aes(
+    y = (as.numeric(w_true_Grid[1,]) - 1/12)^2,
+    x = (omega_org[1:10] - 1/12)^2,
+    col = " "   # just a dummy legend key
+  )) +
+  geom_line(aes(
+    y = C_hat * (omega_org[1:10] - 1/12)^2,
+    x = (omega_org[1:10] - 1/12)^2,
+    col = "sqrt(c)(omega)"   # another dummy key, will be replaced by label
+  )) +
+  theme_pubr()+
+  labs(color=" ")+
+  labs("sqrt(c)(omega)"=expression(sqrt(hat(c)) * (hat(omega)[l] - 1/12)^2))+
+  ggtitle("c) Ground truth over estimated exit rate", "Square distance to 1/12")+
+  ylab(expression((omega-1/12)^2))+ 
+  scale_colour_manual(values = c( brewer.pal(n = 5, name = "Blues")[c(3, 5)]),
+                      labels=c(" ", expression(hat(c) * (hat(omega)[l] - 1/12)^2)))+
+  scale_fill_manual(values = c(brewer.pal(n = 5, name = "Blues")[c(3, 5)]))+
+  xlab(expression((hat(omega)-1/12)^2))+
+  theme(legend.title = element_blank())
+
+
+
+Figure_1<-plot_grid(plot_grid(Exit_rates, Exit_rates_adj, nrow=1),
+          plot_grid(NA, TR_vs_Est, NA, nrow=1), nrow=2)
+          
+ggsave(Figure_1, file="4. Simulation/Unadjusted/exitrate_adj_noadj_og_sq_dist.pdf", width =10, height=6)
 
 
 
