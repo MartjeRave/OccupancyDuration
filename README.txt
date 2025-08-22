@@ -1,4 +1,4 @@
-This is code corresponding to the papar: 
+This is the code corresponding to the paper: 
 
 https://arxiv.org/abs/2505.02587
 
