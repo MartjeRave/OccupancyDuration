@@ -22,7 +22,7 @@ source(paste0(functionpath, "/1_Code/0_Libraries.R"))
 ######### Homemade Functions #########################
 ######################################################
 
-source(paste0(functionpath, "/1. Code/0_43_Home_Functions_Sim_NegativeBinomial.R"))
+source(paste0(functionpath, "/1_Code/0_43_Home_Functions_Sim_NegativeBinomial.R"))
 
 
 
@@ -36,8 +36,8 @@ source(paste0(functionpath, "/1. Code/0_43_Home_Functions_Sim_NegativeBinomial.R
 w_true_Grid<-matrix(0, 1, 10)
 w_true_Grid[1,]<-exp(0.4*seq(10,1, by=-1))/sum(exp(0.4*seq(10,1, by=-1)))
 
-the<-c(0.5, 1, 5, 10)
-name_the<-c("05", "1", "5", "10")
+the<-c(0.5, 1, 5, 10)[-1]
+name_the<-c("05", "1", "5", "10")[-1]
 
 for(ta in 1:length(the)){
   
