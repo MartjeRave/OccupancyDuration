@@ -6,7 +6,7 @@
 # for replicability this wrangling pertains to data downloaded on the 
 
 
-function_folder <- "OccupancyDuration"
+function_folder<-"OccupancyDuration"
 functionpath<-substr(dirname(rstudioapi::getSourceEditorContext()$path), 
                      1, unlist(gregexpr(function_folder, 
                                         dirname(rstudioapi::getSourceEditorContext()$path)))+(nchar(function_folder)-1))
@@ -141,7 +141,7 @@ new_rows<-sqldf("SELECT landId, districtId, date, SUM(cases) as cases_tot,
 # sum(new_rows[,5:ncol(new_rows)])==sum(new_rows$cases_tot)
 
 
-new_rows$date<- as.Date(new_rows$date)
+new_rows$date<-as.Date(new_rows$date)
 RKI_old<-RKI
 RKI<-as_tibble(new_rows)
 # RKI_bund<-as_tibble(new_rows_bund)
@@ -383,7 +383,7 @@ depri$AGS[depri$AGS=="13053000"|
             depri$AGS=="13056000"]<-"13072000"  #"LK Rostock" 
 depri$AGS[depri$AGS=="13061000"|
             depri$AGS=="13005000"|
-            depri$AGS=="13057000"] <-"13073000" #"LK Vorpommern-R\xfcgen"
+            depri$AGS=="13057000"]<-"13073000" #"LK Vorpommern-R\xfcgen"
 depri$AGS[depri$AGS=="13058000"|
             depri$AGS=="13006000"]<-"13074000" #"LK Nordwestmecklenburg"
 depri$AGS[depri$AGS=="13062000"|
@@ -409,7 +409,7 @@ RKI_Divi_lag<-RKI_Divi_lag%>%
 
 RKI_Divi_lag$district<-iconv(RKI_Divi_lag$district, from = "latin1", to = "UTF-8")
 
-RKI_Divi_lag<- RKI_Divi_lag[RKI_Divi_lag$districtId!=16056,]
+RKI_Divi_lag<-RKI_Divi_lag[RKI_Divi_lag$districtId!=16056,]
 
 RKI_Divi_lag$weekday<-as.character(wday(RKI_Divi_lag$date, label=TRUE))
 

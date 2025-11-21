@@ -263,17 +263,17 @@ SmoothEst<-unique(cbind(train_data_l[, c("date", "districtId")],
 
 
 # Sicherstellen, dass `shpdatei` das richtige CRS hat
-shpdatei <- st_transform(SmoothEst, crs = 4326)
+shpdatei<-st_transform(SmoothEst, crs = 4326)
 # cities
-cities <- data.frame(
+cities<-data.frame(
   city = c("Hamburg", "Berlin", "Dortmund", "Munich", "Dresden", "Stuttgart"),
   lon = c(10.0, 13.4, 7.47, 11.58, 13.73, 9.18),
   lat = c(53.55, 52.52, 51.51, 48.14, 51.05, 48.78)
 )
 # Convert to an sf object
-cities_sf <- st_as_sf(cities, coords = c("lon", "lat"), crs = 4326)
+cities_sf<-st_as_sf(cities, coords = c("lon", "lat"), crs = 4326)
 # Hintergrundkarte mit Natural Earth-Daten (Alternative zu OSM)
-germany <- ne_countries(scale = "medium", country="Germany", returnclass = "sf")
+germany<-ne_countries(scale = "medium", country="Germany", returnclass = "sf")
 
 mapsmooth<-ggplot() +
   geom_sf(data = germany, fill = "gray90", color = "white") +  # Germany background

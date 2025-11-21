@@ -2,7 +2,7 @@
 ######### Data Visualisation #########################
 ######################################################
 
-function_folder <- "OccupancyDuration"
+function_folder<-"OccupancyDuration"
 functionpath<-substr(dirname(rstudioapi::getSourceEditorContext()$path), 
                      1, unlist(gregexpr(function_folder, 
                                         dirname(rstudioapi::getSourceEditorContext()$path)))+
@@ -32,7 +32,7 @@ train_data_l<-readRDS("2. Data/training_data.rds")%>%
 
 # Create a data frame with city coordinates
 
-cities <- data.frame(
+cities<-data.frame(
   city = c("Hamburg", "Berlin", "Dortmund", "Munich", "Dresden", "Stuttgart"),
   lon = c(10.0, 13.4, 7.47, 11.58, 13.73, 9.18),
   lat = c(53.55, 52.52, 51.51, 48.14, 51.05, 48.78)
@@ -40,9 +40,9 @@ cities <- data.frame(
 
 
 # Convert to an sf object
-cities_sf <- st_as_sf(cities, coords = c("lon", "lat"), crs = 4326)
+cities_sf<-st_as_sf(cities, coords = c("lon", "lat"), crs = 4326)
 # Hintergrundkarte mit Natural Earth-Daten (Alternative zu OSM)
-germany <- ne_countries(scale = "medium", country="Germany", returnclass = "sf")
+germany<-ne_countries(scale = "medium", country="Germany", returnclass = "sf")
 
 
 TotalCases_min<-as.data.frame(readRDS("2. Data/DIVI_2022-10-27.rds")%>%
@@ -73,12 +73,12 @@ og_Dist%>%
   mutate(per_occ=faelle_covid_aktuell/(betten_frei+betten_belegt+0.00000000001)*100)%>%
   arrange(per_occ, decreasing=TRUE)
 
-shpdatei <- st_transform(TotalCases, crs = 4326)
+shpdatei<-st_transform(TotalCases, crs = 4326)
 # Compute centroids of each district
-district_centroids <- st_centroid(shpdatei)
+district_centroids<-st_centroid(shpdatei)
 
 
-MapIntro <- ggplot() +
+MapIntro<-ggplot() +
   geom_sf(data = germany, fill = "gray90", color = "white") +  # Germany background
   geom_sf(data = TotalCases, aes(fill = max_cov), color = "white", size = 0.2) +  # Uniform blue fill
   geom_sf(data = district_centroids, color = "white", size = 0.6) +  # District centroids

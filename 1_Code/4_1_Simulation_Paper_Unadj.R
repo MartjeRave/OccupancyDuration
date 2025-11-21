@@ -4,7 +4,7 @@
 ######### Exploration Bias Adjustment ################
 ######################################################
 
-function_folder <- "OccupancyDuration"
+function_folder<-"OccupancyDuration"
 functionpath<-substr(dirname(rstudioapi::getSourceEditorContext()$path), 
                      1, unlist(gregexpr(function_folder, 
                                         dirname(rstudioapi::getSourceEditorContext()$path)))+(nchar(function_folder)-1))
@@ -333,7 +333,7 @@ Exit_rates<-ggplot()+
  
 # ## Step 3 ######## Jack Knife Adjustment  ##################################
 # 
-# omega_org<- apply(omegas_org[ varianceRuns,], 2, median)
+# omega_org<-apply(omegas_org[ varianceRuns,], 2, median)
 # 
 # w_true_Grid[1,]
 # Jack_Knife_data<-sim_data_jk(w=omega_org,

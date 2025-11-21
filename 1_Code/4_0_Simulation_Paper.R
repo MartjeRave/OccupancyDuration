@@ -26,7 +26,7 @@ source(paste0(functionpath, "/1_Code/0_4_Home_Functions_Sim.R"))
 ######################################################
 
 
-w_true_Grid<-matrix(0, 3, 10)
+w_true_Grid<-matrix(0, 1, 10)
 w_true_Grid[1,]<-exp(0.4*seq(10,1, by=-1))/sum(exp(0.4*seq(10,1, by=-1)))
 # w_true_Grid[2,]<-exp(seq(1,10, by=1))/sum(exp(seq(1,10, by=1)))
 # w_true_Grid[3,]<-sample(1:10, 10, replace=TRUE)
@@ -44,7 +44,7 @@ for(j in 311:311){
                                                     districtId_sim=1:200, 
                                                     date_sim=1:(200+ncol(w_true_Grid)),
                                                     ss=j, 
-                                                    deterministic=TRUE,
+                                                    # deterministic=TRUE,
                                                     with_coef=TRUE)
     print(paste("Iteration", length(datalist), "done"))
     

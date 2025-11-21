@@ -47,7 +47,7 @@ sim_data_offset<-function(w=w_true,
     N<-rgamma(length(districtId_sim)*
                 length(date_sim),0.1,0.5)
     M<-rep(rgamma(length(districtId_sim),1,3), each=length(date_sim))
-    Incoming <- rpois(length(M), lambda=exp(0.5+1*M+0.2*N))    
+    Incoming<-rpois(length(M), lambda=exp(0.5+1*M+0.2*N))    
     
     data_sim<-as.data.frame(cbind("date"=rep(date_sim, 
                                              times=length(districtId_sim)), 
@@ -55,7 +55,7 @@ sim_data_offset<-function(w=w_true,
                                                    each=length(date_sim)), 
                                   M, N, Incoming))
   }else{
-    Incoming <- rpois(length(date_sim)*length(districtId_sim), lambda=10)
+    Incoming<-rpois(length(date_sim)*length(districtId_sim), lambda=10)
     data_sim<-as.data.frame(cbind("date"=rep(date_sim, 
                                              times=length(districtId_sim)), 
                                   "districtId"=rep(districtId_sim, 
@@ -81,7 +81,7 @@ sim_data_offset<-function(w=w_true,
         dplyr::mutate(date=date+i)%>%
         dplyr::select(date, count, districtId)
       names(lag)<-c("date", paste0("Incom_lag",i), "districtId")
-      data_tot<- suppressMessages( data_tot%>%
+      data_tot<-suppressMessages( data_tot%>%
                                      full_join(lag, by=c("date", "districtId"))%>%
                                      na.replace(replace=0))
     }
@@ -94,7 +94,7 @@ sim_data_offset<-function(w=w_true,
   }else{
     # data_tot<-Off_cal(data_off=data_sim, w_hat=w)
     # Offset<-t(w%*%t(data_tot[,grepl("Incoming_", names(data_tot))]))
-    # Outgoing <- rpois(nrow(data_tot), lambda=Offset)
+    # Outgoing<-rpois(nrow(data_tot), lambda=Offset)
     # data_tot<-cbind(data_tot, Outgoing)
     # data_tot$Diff<-data_tot$Incoming-data_tot$Outgoing
   }
@@ -188,12 +188,12 @@ optimize_Like<-function(w_opt_prev=w_try4_new,
   FisherInf<-Neg2_der_w(w_derivative=w_opt_prev,
                         data_derivative=Off_data_temp)
   
-  Dmat <- FisherInf
-  d<- (score_w+ FisherInf%*%w_opt_prev[-length(w_opt_prev)])
+  Dmat<-FisherInf
+  d<-(score_w+ FisherInf%*%w_opt_prev[-length(w_opt_prev)])
   b<-c(rep(0, length(w_opt_prev)-1), rep(-1, length(w_opt_prev)-1))
   
   
-  Amat<- cbind(diag(1, length(w_opt_prev)-1), diag(-1, length(w_opt_prev)-1))
+  Amat<-cbind(diag(1, length(w_opt_prev)-1), diag(-1, length(w_opt_prev)-1))
   
   Opt<-solve.QP(Dmat=Dmat,
                 dvec=d,
@@ -419,7 +419,7 @@ sim_data_jk<-function(w=median,
       mutate(date=as.Date(as.numeric(date)))
     names(lag)<-c("date", paste0("Incom_lag",i), "districtId")
     
-    data_tot<- suppressMessages( data_tot%>%
+    data_tot<-suppressMessages( data_tot%>%
                                    mutate(date=as.Date(as.numeric(date)),
                                           districtId=as.numeric(districtId))%>%
                                    full_join(lag%>%
