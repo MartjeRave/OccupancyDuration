@@ -60,11 +60,11 @@ Modelling the COVIDData with lage 30:
 3_Model_Covid.R [Running time around 3h on MAC OS M2 and 20h on Thinkpad T490s]
 
 Modelling the COVIDData with lage 40:
-5_Supplementary_Material.R [Running time around 3h on MAC OS M2 and 20h on Thinkpad T490s]
+5_Supplementary_Material.R [Running time around 3.5h on MAC OS M2 and 20h on Thinkpad T490s]
 
 
 Modelling simulated data:
-4_0_Simulation_Paper.R (Simulation) [Running time around 2h on MAC OS M2 and 7h on Thinkpad T490s]
+4_0_Simulation_Paper.R (Simulation) [Running time around 1h on MAC OS M2 and 7h on Thinkpad T490s]
 4_1_Simulation_Paper_Unadj.R (Bias adjustment check) [Running time around 1.5h on MAC OS M2 and 7h on Thinkpad T490s]
 4_3_Simulation_NegativeBinomial.R  (Misspecified)  [Running time around 5h on MAC OS M2 and 30h on Thinkpad T490s]
 
