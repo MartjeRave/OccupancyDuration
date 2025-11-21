@@ -4,7 +4,7 @@
 ######### Exploration Bias Adjustment ################
 ######################################################
 
-function_folder<-"OccupancyDuration"
+function_folder <- "OccupancyDuration"
 functionpath<-substr(dirname(rstudioapi::getSourceEditorContext()$path), 
                      1, unlist(gregexpr(function_folder, 
                                         dirname(rstudioapi::getSourceEditorContext()$path)))+(nchar(function_folder)-1))
@@ -14,7 +14,7 @@ setwd(functionpath)
 ######### Libraries ##################################
 ######################################################
 
-source(paste0(functionpath, "/1. Code/0. Functions.R"))
+source(paste0(functionpath, "/1_Code/0_Libraries.R"))
 
 
 
@@ -246,23 +246,6 @@ exitrate_med<-apply(omegas_org, 2, median)
 
 
 
-
-Prediction<-fitlist[[z-1]]%>%
-  mutate(Incoming_pred=Incoming, Outgoing_pred=Outgoing)%>%
-  dplyr::select(-c("Incoming", "Outgoing"))%>%
-  full_join(datalist[[1]]%>%
-              dplyr::select(names(fitlist[[z-1]])))
-ggplot()+
-  geom_point(aes(x=Prediction$Incoming_pred,y=Prediction$Incoming, col="Incoming"))+
-  geom_line(aes(x=Prediction$Incoming_pred,y=Prediction$Incoming_pred , col="Perf Fit"))+
-  xlab("Estimation")+ylab("True")
-ggplot()+
-  geom_point(aes(x=Prediction$Outgoing_pred,y=Prediction$Outgoing, col="Outgoing"))+
-  geom_line(aes(x=Prediction$Outgoing_pred,y=Prediction$Outgoing_pred , col="Perf Fit"))+
-  xlab("Estimation")+ylab("True")
-
-
-
 varianceRuns<-200:400
 
 exitratemed<-apply(omegas_adj[varianceRuns,], 2, median)
@@ -281,7 +264,7 @@ for(i in varianceRuns){
 
 
 # stddevadj<-sqrt(diag(apply(VCOV_Exit_Runs, c(2,3), mean)+((1+1/length(varianceRuns))/(length(varianceRuns)-1))*apply(VCOV_Exit_Runs_sum, c(2,3), sum)))
-exitrate_med<-apply(omegas_adj, 2, median)
+exitrate_med<-apply(omegas_org, 2, median)
 
 ################################################################################
 ################# Saving Figure 1  Paper #########################################
@@ -333,7 +316,7 @@ Exit_rates<-ggplot()+
  
 # ## Step 3 ######## Jack Knife Adjustment  ##################################
 # 
-# omega_org<-apply(omegas_org[ varianceRuns,], 2, median)
+# omega_org<- apply(omegas_org[ varianceRuns,], 2, median)
 # 
 # w_true_Grid[1,]
 # Jack_Knife_data<-sim_data_jk(w=omega_org,
@@ -381,8 +364,8 @@ Exit_rates<-ggplot()+
 # 
 
 
-C_hat<-coef(lm(I((c(w_true_Grid[1,],0,0)-1/max_lag)^2)~I((omega_org-1/max_lag)^2)-1))
-omega_adj<-1/max_lag+ifelse(omega_org<1/max_lag, -1, 1)*sqrt((C_hat)*(omega_org-1/max_lag)^2)
+C_hat<-coef(lm(I((c(w_true_Grid[1,],0,0)-1/max_lag)^2)~I((exitrate_med-1/max_lag)^2)-1))
+omega_adj<-1/max_lag+ifelse(exitrate_med<1/max_lag, -1, 1)*sqrt((C_hat)*(exitrate_med-1/max_lag)^2)
 omega_adj[omega_adj<0]=0
 omega_adj<-omega_adj/sum(omega_adj)
 
@@ -438,6 +421,7 @@ Exit_rates_adj<-ggplot()+
 Exit_rates_adj
 
 
+omega_org<-apply(omegas_org, 2, median)
 
 TR_vs_Est<-ggplot() +
   geom_point(aes(
@@ -466,10 +450,10 @@ TR_vs_Est<-ggplot() +
 ############# Paper: Figure 2  #################################################
 ################################################################################
 
-Figure_1<-plot_grid(plot_grid(Exit_rates, Exit_rates_adj, nrow=1),
+Figure_2<-plot_grid(plot_grid(Exit_rates, Exit_rates_adj, nrow=1),
           plot_grid(NA, TR_vs_Est, NA, nrow=1), nrow=2)
           
-ggsave(Figure_1, file="3_Results/Figure_5.pdf", width =10, height=6)
+ggsave(Figure_2, file="3_Results/Figure_2.pdf", width =10, height=6)
 
 
 
