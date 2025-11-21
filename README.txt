@@ -49,24 +49,24 @@ Set up:
 0_43_Home_Functions_Sim_NegativeBinomial.R # ---> Homemade functions for modelling misspecified simulated data 4_3_Simulation_NegativeBinomial.R
 0_3_Home_Functions_Sim_NegativeBinomial.R # ---> 5_Supplementary_Material.R
 
-Data download and wrangling: (You can jump these two data sets if you plan to use train_data.R directly) 
+Data download and wrangling: (You can jump these two data sets if you plan to use train_data.R directly) [Running time very fast]
 1_Data_Download.R
 2_Data_Wrangling.R
 
-Data visualisation: 
+Data visualisation: [Running time very fast]
 2_1_DataVis.R
 
-Modelling the COVIDData with lage 30: 
-3_Model_Covid.R (20h)
+Modelling the COVIDData with lage 30:  
+3_Model_Covid.R [Running time around 3h on MAC OS M2 and 20h on Thinkpad T490s]
 
 Modelling the COVIDData with lage 40:
-5_Supplementary_Material.R
+5_Supplementary_Material.R [Running time around 3h on MAC OS M2 and 20h on Thinkpad T490s]
 
 
 Modelling simulated data:
-4_0_Simulation_Paper.R (Simulation)
-4_1_Simulation_Paper_Unadj.R (Bias adjustment check)
-4_3_Simulation_NegativeBinomial.R  (Misspecified)
+4_0_Simulation_Paper.R (Simulation) [Running time around 2h on MAC OS M2 and 7h on Thinkpad T490s]
+4_1_Simulation_Paper_Unadj.R (Bias adjustment check) [Running time around 1.5h on MAC OS M2 and 7h on Thinkpad T490s]
+4_3_Simulation_NegativeBinomial.R  (Misspecified)  [Running time around 5h on MAC OS M2 and 30h on Thinkpad T490s]
 
 Flow chart:
 
@@ -83,7 +83,7 @@ Flow chart:
 
 
 
-(Lazyweave and RSQL do not exist in 4.5.2 anymore- Lazyweave is not important and can be replaced by kable and MYSQL can be replaced by RMariaDB) 
+(Lazyweave and RSQL do not exist in 4.5.2 anymore- Lazyweave is not important and can be replaced by kable BUT MYSQL is important and can be replaced by RMariaDB) 
 
 
 The author's current R-version:

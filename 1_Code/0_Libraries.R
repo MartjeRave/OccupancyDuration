@@ -2,11 +2,6 @@
 #### Packages
 #####################
 
-#install.packages("rgdal")
-#library(maptools)
-#library(rgeos)
-#library(taskscheduleR)
-
 library(abind)
 library(cluster)
 library(colorspace)
