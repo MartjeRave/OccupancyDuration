@@ -38,7 +38,8 @@ Supplementary Material:
 
 
 Let's have a look at the content on 1_Code:
-
+!!!! ATTENTION !!!!
+!!!! In the beginning of each code run I have colled the folder name OccupancyDuration this may change depending on which filename you have chosen for the code!!!!!!!
 
 Set up: 
 0_Libraries.R  ---> Libraries for modelling 
@@ -57,10 +58,10 @@ Data visualisation: [Running time very fast]
 2_1_DataVis.R
 
 Modelling the COVIDData with lage 30:  
-3_Model_Covid.R [Running time around 3h on MAC OS M2 and 20h on Thinkpad T490s]
+3_Model_Covid.R [Running time around 5h on MAC OS M2 and 20h on Thinkpad T490s]
 
 Modelling the COVIDData with lage 40:
-5_Supplementary_Material.R [Running time around 3.5h on MAC OS M2 and 20h on Thinkpad T490s]
+5_Supplementary_Material.R [Running time around 5h on MAC OS M2 and 20h on Thinkpad T490s]
 
 
 Modelling simulated data:
@@ -72,7 +73,7 @@ Flow chart:
 
 
                 --> 1_Data_Download.R --> 2_Data_Wrangling.R  --> 2_1_DataVis.R
-              /                                           \_
+              /                                            \
 0_Libraries.R   ------- train_data.R -------------------->  \-->  3_Model_Covid.R <------------- 0_3_Home_Functions_Covid.R 
               \                                              \--> 5_Supplementary_Material.R <-/
                \

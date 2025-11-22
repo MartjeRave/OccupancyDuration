@@ -39,7 +39,7 @@ w_true_Grid[1,]<-exp(0.4*seq(10,1, by=-1))/sum(exp(0.4*seq(10,1, by=-1)))
 the<-c(0.5, 1, 5, 10)
 name_the<-c("05", "1", "5", "10")
 
-for(ta in 3:length(the)){
+for(ta in 1:length(the)){
   
 
 ######################################################
@@ -397,7 +397,7 @@ write.csv(res_round, "3_Results/Table_2.csv")
 ################################################################################
 ############# Paper: Figure 5  ##################################################
 ################################################################################
-Exitrate_in_Pois<-read.csv("3_Results/Exitrate_In_Pois")
+Exitrate_in_Pois<-read.csv("3_Results/Exitrate_In_Pois.csv")
 Exitrate_in_05<-read.csv("3_Results/Exitrate_In_Mis_05.csv")
 Exitrate_in_1<-read.csv("3_Results/Exitrate_In_Mis_1.csv")
 Exitrate_in_5<-read.csv("3_Results/Exitrate_In_Mis_5.csv")
@@ -411,7 +411,7 @@ df<-rbind(
   "Theta = 1"  = apply(Exitrate_in_1[200:400, -1], 2, median),
   "Theta = 5"  = apply(Exitrate_in_5[200:400, -1], 2, median),
   "Theta = 10" = apply(Exitrate_in_10[200:400, -1], 2, median),
-  "Poisson" = apply(Exitrate_in_Pois[200:400, 3:5], 2, median)
+  "Poisson" = apply(Exitrate_in_Pois[200:400, -1], 2, median)
 )
 
 # Normalize all but the first row
@@ -423,16 +423,30 @@ df_long<-as.data.frame(df) %>%
   pivot_longer(-Coef, names_to = "Position", values_to = "Value") %>%
   mutate(Position = as.numeric(gsub("V", "", Position)))
 
-diff_leng_stay<-ggplot(df_long, aes(x = Position, y = Value, group = Coef, colour = Coef)) +
-  theme_pubr()+
-  geom_line(data = df_long %>% filter(Coef == "True Coefficient"), size = 1.5) +
-  geom_line(data = df_long %>% filter(Coef != "True Coefficient"), size = 0.7) +
+
+blue_scale <- c(
+  "True" = "#08306B",        # darkest blue
+  "Poisson" = "#2171B5",
+  "Theta = 0.5" = "#4292C6",
+  "Theta = 1"   = "#6BAED6",
+  "Theta = 5"   = "#9ECAE1",
+  "Theta = 10"  = "#C6DBEF"  # lightest
+)
+
+
+
+diff_leng_stay <- ggplot(df_long, aes(x = Position, y = Value, group = Coef, colour = Coef)) +
+  theme_pubr() +
+  geom_line(data = df_long %>% filter(Coef == "True"), size = 1.5) +
+  geom_line(data = df_long %>% filter(Coef != "True"), size = 0.7) +
   geom_point() +
   scale_x_continuous(breaks = 1:12) +
-  labs(x = "Position", y = "Value", title = "Exit Rates of misspecified models") 
+  scale_colour_manual(values = blue_scale) +
+  labs(x = "Lag", y = "Estimated exit rate") +
+  ggtitle("Estimated exit rates", subtitle = "For different simulated data")
+
 
 ggsave(diff_leng_stay, file="3_Results/Figure_5.pdf", width =6, height=3 )
-
 
 
 

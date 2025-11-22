@@ -1,4 +1,4 @@
-"","Covariates","Estimates","Std. Dev.","Ground Truth"
-"1","(Intercept)","0.3768","0.0097",0.5
-"2","M","0.9843","0.0182",1
-"3","N","0.215","0.0036",0.2
+"","Parameter","Estimate","Std. Dev.","Ground Truth"
+"(Intercept)","beta0","0.3779","0.0089","0.5"
+"M","beta1","0.9846","0.0166","1"
+"N","beta2","0.2149","0.0036","0.2"

@@ -425,7 +425,7 @@ ggsave(Exit_rates, file="3_Results/Figure_7.pdf", width=7, height=4)
 ################################################################################
 ## Berlin and Brandenburg highlights added in post (blue lines around title)
 
-DIVI_cap<-read.csv("2. Data/Intensivregister_Bundeslaender_Kapazitaeten.csv")
+DIVI_cap<-read.csv("2_Data/Intensivregister_Bundeslaender_Kapazitaeten.csv")
 
 IncomingGermany_true<-DIVI_cap[,c("datum", "bundesland_id", "bundesland_name", "faelle_covid_erstaufnahmen")]%>%
   na.omit()%>%mutate(date=datum)

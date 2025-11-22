@@ -325,32 +325,28 @@ for(z in 1:runs1){
 ################################################################################
 ############# Paper: Table 1  ##################################################
 ################################################################################
-varianceRuns<-200:400
 
-exitratemed<-apply(omegas_adj[varianceRuns,], 2, median)
+
+betamed<-apply(Coeff_in[varianceRuns,-1], 2, median)
 VCOV_Exit_Runs<-array(0, dim=c(length(varianceRuns), 
-                               ncol=ncol(VCOV[1,,]), 
-                               nrow=nrow(VCOV[1,,])))
+                               ncol=ncol(vcov(modellist[[1]])), 
+                               nrow=nrow(vcov(modellist[[1]]))))
 VCOV_Exit_Runs_sum<-array(0, dim=c(length(varianceRuns), 
-                               ncol=ncol(VCOV[1,,]), 
-                               nrow=nrow(VCOV[1,,])))
+                                   ncol=ncol(vcov(modellist[[1]])), 
+                                   nrow=nrow(vcov(modellist[[1]]))))
 for(i in varianceRuns){
-  VCOV_Exit_Runs[(i)-min(varianceRuns)+1,,]<-solve(VCOV[i,,])
-  VCOV_Exit_Runs_sum[(i)-min(varianceRuns)+1,,]<-((omegas_adj[i,]-exitratemed)%*%t(
-    omegas_adj[i,]-exitratemed))[1:11, 1:11]
+  VCOV_Exit_Runs[(i)-min(varianceRuns)+1,,]<-vcov(modellist[[i]])
+  VCOV_Exit_Runs_sum[(i)-min(varianceRuns)+1,,]<-t(as.matrix(Coeff_in[i,-1])-t(
+    as.matrix(betamed)))%*%((as.matrix(Coeff_in[i,-1])-t(as.matrix(betamed))))
 }
 
 
-
-stddevadj<-sqrt(diag(apply(VCOV_Exit_Runs, c(2,3), mean)+((1+1/length(varianceRuns))/(length(varianceRuns)-1))*apply(VCOV_Exit_Runs_sum, c(2,3), sum)))
-exitrate_med<-apply(omegas_adj, 2, median)
-
-
+stddevbeta<-sqrt(diag(apply(VCOV_Exit_Runs, c(2,3), mean)+((1+1/length(varianceRuns))/(length(varianceRuns)-1))*apply(VCOV_Exit_Runs_sum, c(2,3), sum)))
 
 
 Table_1<-as.data.frame(cbind("Parameter"=c("beta0", "beta1", "beta2"), 
-                             "Estimate"=round(exitrate_med, 4), 
-                             "Std. Dev."=stddevadj,
+                             "Estimate"=round(betamed, 4), 
+                             "Std. Dev."=round(stddevbeta, 4),
                              "Ground Truth"= c(0.5, 1, 0.2)))
 
 write.csv(Table_1, "3_Results/Table_1.csv")
@@ -360,6 +356,25 @@ write.csv(Table_1, "3_Results/Table_1.csv")
 ################################################################################
 ############# Paper: Figure 3  #################################################
 ################################################################################
+
+
+varianceRuns<-200:400
+
+exitratemed<-apply(omegas_adj[varianceRuns,], 2, median)
+VCOV_Exit_Runs<-array(0, dim=c(length(varianceRuns), 
+                               ncol=ncol(VCOV[1,,]), 
+                               nrow=nrow(VCOV[1,,])))
+VCOV_Exit_Runs_sum<-array(0, dim=c(length(varianceRuns), 
+                                   ncol=ncol(VCOV[1,,]), 
+                                   nrow=nrow(VCOV[1,,])))
+for(i in varianceRuns){
+  VCOV_Exit_Runs[(i)-min(varianceRuns)+1,,]<-solve(VCOV[i,,])
+  VCOV_Exit_Runs_sum[(i)-min(varianceRuns)+1,,]<-((omegas_adj[i,]-exitratemed)%*%t(
+    omegas_adj[i,]-exitratemed))[1:11, 1:11]
+}
+
+
+
 
 Exit_rates<-ggplot()+
   geom_smooth(aes(x=1:(max_lag-1), y=(apply(omegas_adj[ varianceRuns,], 
@@ -421,7 +436,7 @@ Inc_Out_Data<-as.data.frame(cbind("date"=fitlist[[i]]$date,
                                   "districtId"=fitlist[[i]]$districtId, 
                                   "Incoming_Est"=apply(Incoming_mat, 1, median), 
                                   "Outgoing_Est"=apply(Outgoing_mat, 1, median)))%>%
-  full_join(datalist[[t]][, c("date", "districtId", "Incoming", "Outgoing")])
+  full_join(datalist[[1]][, c("date", "districtId", "Incoming", "Outgoing")])
 
 Max_tot<-max(Inc_Out_Data[, 3:6])
 
